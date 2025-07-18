@@ -3,27 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secuencias de Texto Controladas (Alexander Amaya Atehortua)</title>
+    <title>Poder IA Autónoma: Democratización y Disponibilidad</title>
+    <meta name="description" content="Descubre el Poder de la IA Autónoma: democratización tecnológica y disponibilidad total. Proyecto desarrollado desde Bello, Antioquia, Colombia.">
     <style>
+        /* Fuentes */
+        @import url('https://fonts.googleapis.com/css2?family=Courier+New&family=Press+Start+2P&display=swap');
+
         body {
             display: flex;
+            flex-direction: column; /* Cambiado a columna para apilar el contenido */
             align-items: center;
+            justify-content: space-between; /* Distribuye el espacio entre los elementos */
             min-height: 100vh;
             margin: 0;
             background-color: #1a1a1a; /* Fondo oscuro */
-            font-family: 'Courier New', monospace; /* Fuente de consola */
-            cursor: default; /* Cursor predeterminado, ya no es clicable para iniciar */
-            overflow: hidden; /* Evita barras de desplazamiento si el contenido se mueve */
-            flex-direction: column; /* Added to stack content vertically */
+            font-family: 'Courier New', monospace; /* Fuente de consola por defecto */
+            cursor: default;
+            overflow: hidden; /* Evita barras de desplazamiento */
             position: relative; /* Necesario para el posicionamiento absoluto de los hijos */
+            box-sizing: border-box; /* Incluye padding y borde en el tamaño total */
         }
 
         .content-wrapper {
-            position: absolute; /* Posicionamiento absoluto */
-            top: 15%; /* ¡AJUSTE AQUÍ! Cambiado de 10% a 15% para bajarlo. Puedes probar 20% si quieres bajarlo más. */
+            position: absolute;
+            top: 15%; /* ¡AJUSTE AQUÍ! Cambiado de 1% a 5% para bajarlo. Puedes probar 20% si quieres bajarlo más. */
             left: 5%; /* Mantener el margen izquierdo */
             transform: translateY(-44%); /* Ajuste fino para centrar verticalmente, si se desea */
-
             display: flex;
             flex-direction: column;
             padding: 0;
@@ -36,25 +41,26 @@
             width: 80%;
             max-width: 600px;
             height: 239px; /* Mantenemos la altura definida */
+            z-index: 110; /* Asegura que esté por encima del reloj si se superponen */
         }
 
         #typedTextContainer {
             color: #00ffff; /* Color del texto AZUL CIAN (similar a azul computadora) */
-            font-size: 1.1em; /* Tamaño de fuente del texto, ajustado para el contenedor más pequeño */
-            white-space: pre-wrap; /* Mantiene los saltos de línea y espacios del JS */
-            word-wrap: break-word; /* Rompe palabras largas para que se ajusten al contenedor */
-            opacity: 0; /* Inicialmente invisible, se maneja por JS */
-            transition: opacity 1.0s ease-out; /* Duración del desvanecimiento del texto */
-            line-height: 0.7; /* Altura de línea ajustada */
-            text-align: left; /* Asegura la alineación a la izquierda */
-            position: relative; /* Necesario para que el blinking-box se posicione dentro */
-            padding-left: 20px; /* Ajustado para correr el texto a la derecha */
+            font-size: 1.1em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            opacity: 0;
+            transition: opacity 1.0s ease-out;
+            line-height: 0.7;
+            text-align: left;
+            position: relative;
+            padding-left: 20px;
             height: 400%;
-            width: 100%; /* Ocupa el 100% del ancho del content-wrapper */
+            width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Centra el texto verticalmente dentro de su contenedor */
-            align-items: flex-start; /* Mantiene el texto alineado a la izquierda */
+            justify-content: center;
+            align-items: flex-start;
         }
 
         .word {
@@ -65,28 +71,23 @@
 
         .blinking-box {
             position: absolute;
-            width: 9px; /* Tamaño del cuadro del cursor */
-            height: 9px; /* Tamaño del cuadro del cursor */
-            border: 2px solid #00ffff; /* Borde del cuadro del cursor AZUL CIAN */
-            background-color: #00ffff; /* Color de fondo del cuadro AZUL CIAN */
-            box-shadow: 0 0 7px rgba(0, 255, 255, 0.5); /* Sombra del cuadro del cursor AZUL CIAN */
-            opacity: 0; /* Inicialmente invisible */
-            border-radius: 0px; /* Radio de borde */
+            width: 10px;
+            height: 9px;
+            border: 2px solid #00ffff;
+            background-color: #00ffff;
+            box-shadow: 0 0 7px rgba(0, 259, 255, 0.5);
+            opacity: 0;
+            border-radius: 0px;
             z-index: 10;
         }
 
-        /* Clase para activar la animación de parpadeo del cuadro */
         .blinking-box.animate {
-            animation: pause-blink-and-vanish 3.0s forwards; /* Duración de la animación del cursor */
+            animation: pause-blink-and-vanish 3.0s forwards;
         }
 
-        /* Definición de la animación de parpadeo y desaparición del cuadro */
         @keyframes pause-blink-and-vanish {
-            /* --- FASE DE PAUSA (3 SEGUNDOS VISIBLE) --- */
             0% { opacity: 1; }
             78.95% { opacity: 1; }
-
-            /* --- FASE DE MUCHO MÁS PARPADEO RÁPIDO --- */
             80% { opacity: 0; }
             81% { opacity: 1; }
             82% { opacity: 0; }
@@ -106,28 +107,80 @@
             96% { opacity: 0; }
             97% { opacity: 1; }
             98% { opacity: 0; }
-
-            /* --- FASE DE DESAPARICIÓN TOTAL Y PERMANENTE --- */
             100% { opacity: 0; }
         }
 
         .additional-text {
-            color: #ffffff; /* Color blanco para visibilidad */
+            color: #ffffff;
             font-size: 1.2em;
             text-align: left;
-            width: 100%;
-            padding-left: 20px; /* Ajusta este valor si necesitas más margen a la izquierda */
+            width: 100%; /* Ocupa todo el ancho */
+            padding-left: 17px;
             box-sizing: border-box;
             margin-top: 0;
             margin-bottom: -5px;
             line-height: 1.1;
+            position: absolute; /* Posicionamiento absoluto para controlarlo */
+            top: 55%; /* Posiciona debajo del texto principal */
+            left: 5%;
+            max-width: 600px;
+            z-index: 90; /* Ligeramente por debajo del texto principal */
         }
 
-        p.additional-text:first-of-type {
-            margin-top: 380px; /* Puedes subirlo más reduciendo este valor (ej. 20px, 2px) */
+        /* Estilo para el texto del técnico, ahora con menos fluorescencia */
+        .technician-text {
+            font-family: 'Press Start 2P', cursive, monospace; /* Misma fuente del reloj */
+            font-weight: bold; /* Mismo grosor del reloj */
+            color: #00ffff; /* Color azul cian */
+            /* ¡SOMBRA REDUCIDA PARA MENOS FLUORESCENCIA! */
+            text-shadow: 0 0 1px #00ffff, 0 0 2px #00ffff;
+            font-size: 0.6em;
+            text-align: left;
+            width: 100%;
+            padding-left: 20px;
+            box-sizing: border-box;
+            margin-top: 20px;
+            line-height: 1.0;
+            position: absolute;
+            top: 91%;
+            left: 5%;
+            max-width: 600px;
+            z-index: 9;
+        }
+
+        /* --- Estilos para el Reloj, ahora con menos fluorescencia --- */
+        #reloj {
+            font-family: 'Press Start 2P', cursive, monospace; /* Fuente pixelada para el reloj */
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: #000000;
+            padding: 15px 25px;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            letter-spacing: 1px;
+            text-align: center;
+            white-space: nowrap;
+            width: 100%; /* Ocupa el 100% del ancho */
+            box-sizing: border-box;
+            color: #00ffff; /* Color azul cian */
+            /* ¡SOMBRA REDUCIDA PARA MENOS FLUORESCENCIA! */
+            text-shadow: 0 0 1px #00ffff, 0 0 2px #00ffff;
+            position: absolute; /* Posicionamiento absoluto */
+            bottom: 0; /* Lo fija en la parte inferior */
+            left: 0;
+            z-index: 100; /* Asegura que esté siempre encima */
+        }
+
+        /* Responsive design para pantallas más pequeñas del reloj */
+        @media (max-width: 700px) {
+            #reloj {
+                font-size: 0.8em;
+                padding: 10px 15px;
+                letter-spacing: 0.5px;
+            }
         }
     </style>
-    <meta name="google-site-verification" content="-4evS4q64RV12A6GO5rp7-eVWH0D03EVj392ixPGpdo" />
 </head>
 <body>
     <div class="content-wrapper" id="contentWrapper">
@@ -137,7 +190,10 @@
     </div>
 
     <p class="additional-text">PAGINA EN CONSTRUCCION.</p>
-    
+    <p class="technician-text">Bello Antioquía Colombia </p>
+
+    <div id="reloj">INICIANDO SISTEMAS...</div>
+
     <script>
         const typedTextContainer = document.getElementById('typedTextContainer');
         const animatedBox = document.getElementById('animatedBox');
@@ -145,17 +201,20 @@
         let words = [];
         let wordIndex = 0;
         let typingInterval;
-        let currentSequenceIndex = 3;
+        let currentSequenceIndex = 0; // Se inicia en la primera secuencia
 
         let isSequenceRunning = false;
         let hasSequenceFinished = false;
 
         // --- DEFINE AQUÍ TUS SECUENCIAS DE TEXTO ---
         const textSequences = [
-            "INTELIGENCIA ARTIFICAL BELLO MEDELLIN COLOMBIA EXPERIMENTA SU MAXIMA CAPACIDAD TECNOLOGICA BASADO TAMBIEN EL GRAN EJEMPLO Y SE UTILIZA LA INTELIGENCIA ARTIFICIAL EN SU MAXIMO EXPLENDOR",  "PUESTO QUE INTELIGENCIA ARTIFICIAL ESTA DESARROLLANDOSE Y POR SUPUESTO OCULAR TODO EL PUESTO, LA INTELIGENCIA ARTIFICIAL DEL 100% AL ALCANSE DE TODOS",
-            "SISTEMA INICIANDO EL SERVICIO DE ASISTENCIA VIRTUAL... IDENTIDAD INTELIGENTE GRACIAS A SUS API (SERVIDOR PHYTON) )Y OPEN IA GPT LENGUAJE NATURAL",          "INTERACCIONES ATRAVES DE SU VISION ARTIFICIAL - SERVICIO INICIADO.", "BELLO ANTIOQUIA COLOMBIA IA CORPORADA AVANZADA......", "INTEGRACION DE LA,INTELIGENCIA ARTIFICIAL DESENCAPSULADA EN COLOMBIA PARA SU REDIRECCIONAMIENTO AL ENTORNO" , " INTELIGENCIA ARTIFICIAL MEDELLIN BELLO COLOMBIA 2026..."
-
-            // Añade más secuencias aquí si lo deseas.
+            "SISTEMA INICIANDO EL SERVICIO DE ASISTENCIA VIRTUAL... IDENTIDAD INTELIGENTE GRACIAS A SUS API (SERVIDOR PHYTON) Y OPEN IA GPT LENGUAJE NATURAL",
+            "INTERACCIONES ATRAVES DE SU VISION ARTIFICIAL - SERVICIO INICIADO.",
+            "BELLO ANTIOQUIA COLOMBIA IA CORPORADA AVANZADA......",
+            "INTEGRACION DE LA,INTELIGENCIA ARTIFICIAL DESENCAPSULADA EN COLOMBIA PARA SU REDIRECCIONAMIENTO AL ENTORNO",
+            "INTELIGENCIA ARTIFICAL BELLO MEDELLIN COLOMBIA EXPERIMENTA SU MAXIMA CAPACIDAD TECNOLOGICA BASADO TAMBIEN EL GRAN EJEMPLO Y SE UTILIZA LA INTELIGENCIA ARTIFICIAL EN SU MAXIMO EXPLENDOR",
+            "PUESTO QUE INTELIGENCIA ARTIFICIAL ESTA DESARROLLANDOSE Y POR SUPUESTO OCULAR TODO EL PUESTO, LA INTELIGENCIA ARTIFICIAL DEL 100% AL ALCANSE DE TODOS",
+            "INTELIGENCIA ARTIFICIAL MEDELLIN BELLO COLOMBIA 2026..."
         ];
 
         // Función para preparar el texto (dividirlo en palabras y envolverlas en <span>)
@@ -194,7 +253,15 @@
             animatedBox.classList.remove('animate');
             animatedBox.style.opacity = 0;
 
-            animatedBox.style.left = `${5 - (animatedBox.offsetWidth / 2)}px`;
+            // Ajuste la posición inicial del cursor si es necesario, basado en el primer carácter.
+            // Esto es un ajuste aproximado, podrías necesitar afinarlo.
+            animatedBox.style.left = `${20 - (animatedBox.offsetWidth / 2)}px`; // 2px es el padding-left del contenedor
+            const firstWordRect = words[0] ? words[0].getBoundingClientRect() : null;
+            if (firstWordRect) {
+                const contentWrapperRect = contentWrapper.getBoundingClientRect();
+                animatedBox.style.top = `${firstWordRect.top - contentWrapperRect.top + (firstWordRect.height / 2) - (animatedBox.offsetHeight / 1.9)}px`;
+            }
+
 
             typingInterval = setInterval(revealNextWord, 120);
         }
@@ -206,7 +273,12 @@
 
                 const contentWrapperRect = contentWrapper.getBoundingClientRect();
                 const wordRect = currentWordSpan.getBoundingClientRect();
+
+                // Calcula la posición para el cursor, centrada verticalmente en la palabra.
+                // Se ajusta la altura para que el cursor no quede demasiado alto o bajo.
                 animatedBox.style.top = `${wordRect.top - contentWrapperRect.top + (wordRect.height / 2) - (animatedBox.offsetHeight / 1.9)}px`;
+                // **** CAMBIO AQUI: SE AJUSTÓ PARA MOVER EL CUADRO UN POCO A LA DERECHA ****
+                animatedBox.style.left = `${wordRect.left - contentWrapperRect.left - (animatedBox.offsetWidth / 2) - 10}px`; // Se cambió de -15 a -10
                 animatedBox.style.opacity = 1;
 
                 currentWordSpan.style.opacity = 1;
@@ -242,7 +314,7 @@
                     console.log("Todas las secuencias han terminado. Reiniciando...");
                     isSequenceRunning = false;
                     hasSequenceFinished = true;
-                    currentSequenceIndex = 0;
+                    currentSequenceIndex = 0; // Reinicia para que las secuencias se repitan
                     setTimeout(() => {
                         startCurrentSequence();
                     }, 800);
@@ -250,9 +322,35 @@
             }, 800);
         }
 
+        // --- Funciones para el Reloj ---
+        function actualizarReloj() {
+            const ahora = new Date();
+            const opcionesFecha = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            };
+
+            const hora = ahora.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            const milisegundos = String(ahora.getMilliseconds()).padStart(3, '0');
+
+            const fechaFormateada = ahora.toLocaleDateString('es-ES', opcionesFecha);
+
+            document.getElementById('reloj').textContent =
+                `${fechaFormateada} ${hora}.${milisegundos}`;
+        }
+
+        // Inicio de la aplicación
         document.addEventListener('DOMContentLoaded', () => {
              contentWrapper.style.opacity = 1;
              startCurrentSequence();
+             actualizarReloj();
+             setInterval(actualizarReloj, 10); // Actualiza el reloj cada 10 milisegundos
         });
     </script>
 </body>
