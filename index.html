@@ -3,356 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poder IA Autónoma: Democratización y Disponibilidad</title>
-    <meta name="description" content="Descubre el Poder de la IA Autónoma: democratización tecnológica y disponibilidad total. Proyecto desarrollado desde Bello, Antioquia, Colombia.">
+    <title>Chat con Gemini</title>
     <style>
-        /* Fuentes */
-        @import url('https://fonts.googleapis.com/css2?family=Courier+New&family=Press+Start+2P&display=swap');
-
         body {
-            display: flex;
-            flex-direction: column; /* Cambiado a columna para apilar el contenido */
-            align-items: center;
-            justify-content: space-between; /* Distribuye el espacio entre los elementos */
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
             margin: 0;
-            background-color: #1a1a1a; /* Fondo oscuro */
-            font-family: 'Courier New', monospace; /* Fuente de consola por defecto */
-            cursor: default;
-            overflow: hidden; /* Evita barras de desplazamiento */
-            position: relative; /* Necesario para el posicionamiento absoluto de los hijos */
-            box-sizing: border-box; /* Incluye padding y borde en el tamaño total */
-        }
-
-        .content-wrapper {
-            position: absolute;
-            top: 15%; /* ¡AJUSTE AQUÍ! Cambiado de 1% a 5% para bajarlo. Puedes probar 20% si quieres bajarlo más. */
-            left: 5%; /* Mantener el margen izquierdo */
-            transform: translateY(-44%); /* Ajuste fino para centrar verticalmente, si se desea */
-            display: flex;
-            flex-direction: column;
             padding: 0;
-            box-sizing: border-box;
-            border: none;
-            background-color: transparent;
-            box-shadow: none;
-            border-radius: 10px;
-            opacity: 0;
-            width: 80%;
-            max-width: 600px;
-            height: 239px; /* Mantenemos la altura definida */
-            z-index: 110; /* Asegura que esté por encima del reloj si se superponen */
-        }
-
-        #typedTextContainer {
-            color: #00ffff; /* Color del texto AZUL CIAN (similar a azul computadora) */
-            font-size: 1.1em;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            opacity: 0;
-            transition: opacity 1.0s ease-out;
-            line-height: 0.7;
-            text-align: left;
-            position: relative;
-            padding-left: 20px;
-            height: 400%;
-            width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
+            height: 100vh;
+            background-color: #f4f4f4;
         }
-
-        .word {
-            opacity: 0;
-            display: inline-block;
-            transition: opacity 0.2s ease-in-out;
+        #chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-
-        .blinking-box {
-            position: absolute;
-            width: 10px;
-            height: 9px;
-            border: 2px solid #00ffff;
-            background-color: #00ffff;
-            box-shadow: 0 0 7px rgba(0, 259, 255, 0.5);
-            opacity: 0;
-            border-radius: 0px;
-            z-index: 10;
+        #chatOutput {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
         }
-
-        .blinking-box.animate {
-            animation: pause-blink-and-vanish 3.0s forwards;
+        #chatOutput p {
+            margin: 5px 0;
+            line-height: 1.5;
         }
-
-        @keyframes pause-blink-and-vanish {
-            0% { opacity: 1; }
-            78.95% { opacity: 1; }
-            80% { opacity: 0; }
-            81% { opacity: 1; }
-            82% { opacity: 0; }
-            83% { opacity: 1; }
-            84% { opacity: 0; }
-            85% { opacity: 1; }
-            86% { opacity: 0; }
-            87% { opacity: 1; }
-            88% { opacity: 0; }
-            89% { opacity: 1; }
-            90% { opacity: 0; }
-            91% { opacity: 1; }
-            92% { opacity: 0; }
-            93% { opacity: 1; }
-            94% { opacity: 0; }
-            95% { opacity: 1; }
-            96% { opacity: 0; }
-            97% { opacity: 1; }
-            98% { opacity: 0; }
-            100% { opacity: 0; }
+        #chatOutput p strong {
+            color: #333;
         }
-
-        .additional-text {
-            color: #ffffff;
-            font-size: 1.2em;
-            text-align: left;
-            width: 100%; /* Ocupa todo el ancho */
-            padding-left: 17px;
-            box-sizing: border-box;
-            margin-top: 0;
-            margin-bottom: -5px;
-            line-height: 1.1;
-            position: absolute; /* Posicionamiento absoluto para controlarlo */
-            top: 55%; /* Posiciona debajo del texto principal */
-            left: 5%;
-            max-width: 600px;
-            z-index: 90; /* Ligeramente por debajo del texto principal */
+        #chatOutput .thinking {
+            color: #888;
+            font-style: italic;
         }
-
-        /* Estilo para el texto del técnico, ahora con menos fluorescencia */
-        .technician-text {
-            font-family: 'Press Start 2P', cursive, monospace; /* Misma fuente del reloj */
-            font-weight: bold; /* Mismo grosor del reloj */
-            color: #00ffff; /* Color azul cian */
-            /* ¡SOMBRA REDUCIDA PARA MENOS FLUORESCENCIA! */
-            text-shadow: 0 0 1px #00ffff, 0 0 2px #00ffff;
-            font-size: 0.6em;
-            text-align: left;
-            width: 100%;
-            padding-left: 20px;
-            box-sizing: border-box;
-            margin-top: 20px;
-            line-height: 1.0;
-            position: absolute;
-            top: 87%;
-            left: 5%;
-            max-width: 600px;
-            z-index: 9;
+        #input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
         }
-
-        /* --- Estilos para el Reloj, ahora con menos fluorescencia --- */
-        #reloj {
-            font-family: 'Press Start 2P', cursive, monospace; /* Fuente pixelada para el reloj */
-            font-size: 1.2em;
-            font-weight: bold;
-            background-color: #000000;
-            padding: 15px 25px; /* Restablecido el padding normal */
-            border-radius: 0;
+        #userInput {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-size: 16px;
+            resize: none; /* Evita que el usuario redimensione el textarea */
+        }
+        #sendButton {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
             border: none;
-            box-shadow: none;
-            letter-spacing: 1px;
-            text-align: center;
-            white-space: nowrap;
-            width: 100%; /* Ocupa el 100% del ancho */
-            box-sizing: border-box;
-            color: #00ffff; /* Color azul cian */
-            /* ¡SOMBRA REDUCIDA PARA MENOS FLUORESCENCIA! */
-            text-shadow: 0 0 1px #00ffff, 0 0 2px #00ffff;
-            position: absolute; /* Posicionamiento absoluto */
-            bottom: 30px; /* ¡CAMBIO CLAVE AQUÍ! Subido 30px desde el borde inferior */
-            left: 0;
-            z-index: 100; /* Asegura que esté siempre encima */
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
         }
-
-
-        /* Responsive design para pantallas más pequeñas del reloj */
-        @media (max-width: 700px) {
-            #reloj {
-                font-size: 0.8em;
-                padding: 10px 15px;
-                letter-spacing: 0.5px;
-            }
+        #sendButton:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div class="content-wrapper" id="contentWrapper">
-        <div class="blinking-box" id="animatedBox"></div>
-        <div id="typedTextContainer">
+    <div id="chat-container">
+        <div id="chatOutput">
+            <p><strong>Gemini:</strong> ¡Hola! Soy tu asistente de chat. ¿En qué puedo ayudarte hoy?</p>
+        </div>
+        <div id="input-container">
+            <textarea id="userInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+            <button id="sendButton">Enviar</button>
         </div>
     </div>
-
-    <p class="additional-text">PAGINA EN CONSTRUCCION.</p>
-    <p class="technician-text">Bello Antioquía Colombia</p>
-
-    <div id="reloj">INICIANDO SISTEMAS...</div>
-
-    <script>
-        const typedTextContainer = document.getElementById('typedTextContainer');
-        const animatedBox = document.getElementById('animatedBox');
-        const contentWrapper = document.getElementById('contentWrapper');
-        let words = [];
-        let wordIndex = 0;
-        let typingInterval;
-        let currentSequenceIndex = 0; // Se inicia en la primera secuencia
-
-        let isSequenceRunning = false;
-        let hasSequenceFinished = false;
-
-        // --- DEFINE AQUÍ TUS SECUENCIAS DE TEXTO ---
-        const textSequences = [
-            "SISTEMA INICIANDO EL SERVICIO DE ASISTENCIA VIRTUAL... IDENTIDAD INTELIGENTE GRACIAS A SUS API (SERVIDOR PHYTON) Y OPEN IA GPT LENGUAJE NATURAL",
-            "INTERACCIONES ATRAVES DE SU VISION ARTIFICIAL - SERVICIO INICIADO.",
-            "BELLO ANTIOQUIA COLOMBIA IA CORPORADA AVANZADA......",
-            "INTEGRACION DE LA,INTELIGENCIA ARTIFICIAL DESENCAPSULADA EN COLOMBIA PARA SU REDIRECCIONAMIENTO AL ENTORNO",
-            "INTELIGENCIA ARTIFICAL BELLO MEDELLIN COLOMBIA EXPERIMENTA SU MAXIMA CAPACIDAD TECNOLOGICA BASADO TAMBIEN EL GRAN EJEMPLO Y SE UTILIZA LA INTELIGENCIA ARTIFICIAL EN SU MAXIMO EXPLENDOR",
-            "PUESTO QUE INTELIGENCIA ARTIFICIAL ESTA DESARROLLANDOSE Y POR SUPUESTO OCULAR TODO EL PUESTO, LA INTELIGENCIA ARTIFICIAL DEL 100% AL ALCANSE DE TODOS",
-            "INTELIGENCIA ARTIFICIAL MEDELLIN BELLO COLOMBIA 2026..."
-        ];
-
-        // Función para preparar el texto (dividirlo en palabras y envolverlas en <span>)
-        function prepareText(text) {
-            typedTextContainer.innerHTML = '';
-            const lines = text.split('\n');
-            words = [];
-
-            lines.forEach((line, lineIdx) => {
-                const lineWords = line.split(' ');
-                lineWords.forEach(wordText => {
-                    const wordSpan = document.createElement('span');
-                    wordSpan.textContent = wordText + ' ';
-                    wordSpan.classList.add('word');
-                    typedTextContainer.appendChild(wordSpan);
-                    words.push(wordSpan);
-                });
-                if (lineIdx < lines.length - 1) {
-                    typedTextContainer.appendChild(document.createElement('br'));
-                }
-            });
-            typedTextContainer.style.opacity = 1;
-        }
-
-        // Función para iniciar la secuencia actual
-        function startCurrentSequence() {
-            isSequenceRunning = true;
-            hasSequenceFinished = false;
-
-            clearInterval(typingInterval);
-            wordIndex = 0;
-
-            const phraseToDisplay = textSequences[currentSequenceIndex];
-            prepareText(phraseToDisplay);
-
-            animatedBox.classList.remove('animate');
-            animatedBox.style.opacity = 0;
-
-            // Ajuste la posición inicial del cursor si es necesario, basado en el primer carácter.
-            // Esto es un ajuste aproximado, podrías necesitar afinarlo.
-            animatedBox.style.left = `${20 - (animatedBox.offsetWidth / 2)}px`; // 2px es el padding-left del contenedor
-            const firstWordRect = words[0] ? words[0].getBoundingClientRect() : null;
-            if (firstWordRect) {
-                const contentWrapperRect = contentWrapper.getBoundingClientRect();
-                animatedBox.style.top = `${firstWordRect.top - contentWrapperRect.top + (firstWordRect.height / 2) - (animatedBox.offsetHeight / 1.9)}px`;
-            }
-
-
-            typingInterval = setInterval(revealNextWord, 120);
-        }
-
-        // Función para revelar la siguiente palabra y mover el cuadro
-        function revealNextWord() {
-            if (wordIndex < words.length) {
-                const currentWordSpan = words[wordIndex];
-
-                const contentWrapperRect = contentWrapper.getBoundingClientRect();
-                const wordRect = currentWordSpan.getBoundingClientRect();
-
-                // Calcula la posición para el cursor, centrada verticalmente en la palabra.
-                // Se ajusta la altura para que el cursor no quede demasiado alto o bajo.
-                animatedBox.style.top = `${wordRect.top - contentWrapperRect.top + (wordRect.height / 2) - (animatedBox.offsetHeight / 1.9)}px`;
-                // **** CAMBIO AQUI: SE AJUSTÓ PARA MOVER EL CUADRO UN POCO A LA DERECHA ****
-                animatedBox.style.left = `${wordRect.left - contentWrapperRect.left - (animatedBox.offsetWidth / 2) - 10}px`; // Se cambió de -15 a -10
-                animatedBox.style.opacity = 1;
-
-                currentWordSpan.style.opacity = 1;
-                wordIndex++;
-            } else {
-                clearInterval(typingInterval);
-                animatedBox.style.opacity = 1;
-
-                setTimeout(() => {
-                    animatedBox.classList.add('animate');
-                }, 100);
-
-                animatedBox.removeEventListener('animationend', handleBoxAnimationEnd);
-                animatedBox.addEventListener('animationend', handleBoxAnimationEnd, { once: true });
-            }
-        }
-
-        // Función que se ejecuta cuando la animación de parpadeo del cuadro termina
-        function handleBoxAnimationEnd() {
-            typedTextContainer.style.opacity = 0;
-
-            setTimeout(() => {
-                animatedBox.style.opacity = 0;
-                animatedBox.classList.remove('animate');
-
-                currentSequenceIndex++;
-
-                if (currentSequenceIndex < textSequences.length) {
-                    setTimeout(() => {
-                        startCurrentSequence();
-                    }, 90);
-                } else {
-                    console.log("Todas las secuencias han terminado. Reiniciando...");
-                    isSequenceRunning = false;
-                    hasSequenceFinished = true;
-                    currentSequenceIndex = 0; // Reinicia para que las secuencias se repitan
-                    setTimeout(() => {
-                        startCurrentSequence();
-                    }, 800);
-                }
-            }, 800);
-        }
-
-        // --- Funciones para el Reloj ---
-        function actualizarReloj() {
-            const ahora = new Date();
-            const opcionesFecha = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            };
-
-            const hora = ahora.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-            const milisegundos = String(ahora.getMilliseconds()).padStart(3, '0');
-
-            const fechaFormateada = ahora.toLocaleDateString('es-ES', opcionesFecha);
-
-            document.getElementById('reloj').textContent =
-                `${fechaFormateada} ${hora}.${milisegundos}`;
-        }
-
-        // Inicio de la aplicación
-        document.addEventListener('DOMContentLoaded', () => {
-             contentWrapper.style.opacity = 1;
-             startCurrentSequence();
-             actualizarReloj();
-             setInterval(actualizarReloj, 10); // Actualiza el reloj cada 10 milisegundos
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
