@@ -3,88 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargando Contenido...</title>
+    <title>Chat con Gemini</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column; /* Para centrar verticalmente el texto y el spinner */
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f0f0f0;
-            margin: 0;
             font-family: Arial, sans-serif;
-            overflow: hidden;
-            text-align: center; /* Para centrar el texto "Cargando contenido..." */
-        }
-
-        .loading-message {
-            font-size: 1.5em;
-            color: #555;
-            margin-bottom: 20px; /* Espacio entre el texto y el spinner */
-        }
-
-        .countdown-container {
-            position: relative;
-            width: 150px; /* Tamaño del círculo */
-            height: 150px; /* Tamaño del círculo */
+            margin: 0;
+            padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: transparent;
-            border-radius: 50%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            flex-direction: column;
+            height: 95vh;
+            background-color: #f4f4f4;
         }
-
-        .countdown-circle {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 8px solid rgba(0, 0, 0, 0.1); /* Borde gris claro para el fondo */
-            border-top-color: #007bff; /* Borde azul para la parte que "avanza" */
-            animation: spin 1s linear infinite; /* Animación de giro continuo */
+        #chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 10px auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-
-        /* Definición de la animación de giro */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        #chatOutput {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+            /* Opcional: Puedes reducir el padding-bottom si quieres que el chatOutput termine más cerca del input */
+            /* padding-bottom: 5px; */
         }
-
-        .countdown-text {
-            font-size: 3em; /* Tamaño grande para los números */
-            font-weight: bold;
+        #chatOutput p {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        #chatOutput p strong {
             color: #333;
-            z-index: 10; /* Asegura que el texto esté sobre el círculo */
+        }
+        #chatOutput .thinking {
+            color: #888;
+            font-style: italic;
+        }
+        #input-container {
+            display: flex;
+            /* Hemos reducido el padding de 15px a 8px para acercar los elementos al borde */
+            padding: 8px;
+            border-top: 1px solid #eee;
+            /* Opcional: Si quieres que el input-container esté aún más pegado al chatOutput,
+               puedes añadir un margin-top negativo, pero ten cuidado con el diseño. */
+            /* margin-top: -5px; */
+        }
+        #userInput {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-size: 16px;
+            resize: none; /* Evita que el usuario redimensione el textarea */
+        }
+        #sendButton {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 49px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #sendButton:hover {
+            background-color: #0056b3;
         }
     </style>
+
+    <meta name="google-site-verification" content="Y07CzFRTyOVKXp3pfpySdEjCU4i8LgH95O8WwVMH7kQ" />
 </head>
+
 <body>
-
-    <p class="loading-message">La siguiente página se está cargando...</p>
-    <div class="countdown-container">
-        <div class="countdown-circle"></div>
-        <div class="countdown-text" id="countdown">5</div>
+    <div id="chat-container">
+        <div id="chatOutput">
+            <p><strong>ROBOT LLAVES BELLO ANTIOQUIA:</strong> ¡Hola! Soy tu asistente de IA .  La página está en construcción, Prepárate para conocer la última, tecnología, más avazada del mundo Al alcance de todos, Democratización de la IA, Bello Antioquia Colombia Al mundo... </p>
+        </div>
+        <div id="input-container">
+            <textarea id="userInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+            <button id="sendButton">Enviar</button>
+        </div>
     </div>
-
-    <script>
-        const countdownElement = document.getElementById('countdown');
-        let count = 5; // Inicia la cuenta regresiva desde 5
-
-        const countdownInterval = setInterval(() => {
-            count--; // Disminuye el contador
-
-            if (count > 0) { // Solo actualiza y muestra el número si es mayor que 0
-                countdownElement.textContent = count;
-            } else {
-                // Cuando count es 0 o menos, limpia el texto para que el "0" no aparezca
-                countdownElement.textContent = "";
-                clearInterval(countdownInterval); // Detiene la cuenta regresiva
-                window.location.href = "inex.html"; // Redirige a jira.html
-            }
-        }, 1000); // Actualiza cada 1000 milisegundos (1 segundo)
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
