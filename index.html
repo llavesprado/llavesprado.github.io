@@ -7,8 +7,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: 10px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             height: 95vh;
@@ -19,23 +19,22 @@
             display: flex;
             flex-direction: column;
             max-width: 600px;
-            margin: 10px auto;
+            margin: 1px auto;
             border: 1px solid #ccc;
             border-radius: 8px;
             overflow: hidden;
             background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+            position: relative;
         }
         #chatOutput {
             flex-grow: 1;
-            padding: 15px;
+            padding: 16px;
             overflow-y: auto;
-            border-bottom: 1px solid #eee;
-            /* Opcional: Puedes reducir el padding-bottom si quieres que el chatOutput termine más cerca del input */
-            /* padding-bottom: 5px; */
+            border-bottom: 16px solid #eee;
         }
         #chatOutput p {
-            margin: 5px 0;
+            margin: 8px 0;
             line-height: 1.5;
         }
         #chatOutput p strong {
@@ -47,33 +46,56 @@
         }
         #input-container {
             display: flex;
-            /* Hemos reducido el padding de 15px a 8px para acercar los elementos al borde */
-            padding: 8px;
-            border-top: 1px solid #eee;
-            /* Opcional: Si quieres que el input-container esté aún más pegado al chatOutput,
-               puedes añadir un margin-top negativo, pero ten cuidado con el diseño. */
-            /* margin-top: -5px; */
+            padding: 4px;
+            border-top: 4px solid #eee;
         }
         #userInput {
             flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-right: 10px;
-            font-size: 16px;
-            resize: none; /* Evita que el usuario redimensione el textarea */
+            padding: 8px;
+            border: 8px solid #ccc;
+            border-radius: 8px;
+            margin-right: 8px;
+            font-size: 8px;
+            resize: none;
         }
         #sendButton {
-            padding: 10px 15px;
+            padding: 8px 8px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 49px;
+            border-radius: 8
+            10px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 10px;
         }
         #sendButton:hover {
             background-color: #0056b3;
+        }
+
+        /* Estilos para el cuadro que se adapta al texto */
+        #contenedorCuadro {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 4px 4px; /* Mantener un padding para que el cuadro tenga un tamaño mínimo */
+            background-color: #3498db;
+            border: 3px solid #2980b9;
+            color: white;
+            /* font-size y font-weight ya no son tan relevantes si no hay texto, pero se pueden mantener */
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 10px 1px 1px rgba(0, 0, 0, 0.2);
+            transition: all 0.1s ease;
+            cursor: pointer;
+            border-radius: 1px;
+            text-align: center;
+
+            position: absolute;
+            z-index: 1000;
+        }
+
+        #contenedorCuadro:hover {
+            transform: scale(1.1);
         }
     </style>
 
@@ -83,13 +105,73 @@
 <body>
     <div id="chat-container">
         <div id="chatOutput">
-            <p><strong>ROBOT LLAVES BELLO ANTIOQUIA:</strong> ¡Hola! Soy tu asistente de IA .  La página está en construcción, Prepárate para conocer la última, tecnología, más avazada del mundo Al alcance de todos, Democratización de la IA, Bello Antioquia Colombia Al mundo... </p>
+            <p id="mainText"><strong>ROBOT LLAVES BELLO ANTOQUIA:</strong> ¡Hola! Soy tu asistente de IA . La página está en construcción, Prepárate para conocer la última, tecnología, más avazada del mundo Al alcance de todos, Democratización de la IA, Bello Antioquia Colombia Al mundo</p>
+            <div id="contenedorCuadro"></div>
         </div>
         <div id="input-container">
             <textarea id="userInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
             <button id="sendButton">Enviar</button>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cuadro = document.getElementById('contenedorCuadro');
+            const mainTextParagraph = document.getElementById('mainText');
+
+            cuadro.textContent = ''; // Inicializa sin texto
+
+            const colores = ['#3498db', '#e74c3c', '#27ae60', '#f1c40f', '#9b59b6', '#1abc9c'];
+            let indiceColorActual = 0;
+            let currentLeftPosition = 0; // Se mantiene en 0 para estabilidad horizontal
+            // *** Línea de configuración para el desplazamiento vertical ***
+            // Ajusta este valor para mover el cuadro arriba o abajo desde su posición original.
+            // Un valor positivo lo mueve hacia abajo, un valor negativo lo mueve hacia arriba.
+            let currentTopPosition = 0; // Por ejemplo, pon -10 para moverlo 10px arriba, o 20 para 20px abajo.
+
+            function cambiarColorCuadro() {
+                indiceColorActual = (indiceColorActual + 1) % colores.length;
+                cuadro.style.backgroundColor = colores[indiceColorActual];
+                cuadro.style.borderColor = colores[indiceColorActual];
+                cuadro.textContent = ''; // Asegura que no tenga texto al cambiar de color
+                positionCuadro(); // Reposiciona el cuadro en caso de cambio de tamaño
+            }
+
+            cuadro.addEventListener('click', function() {
+                cambiarColorCuadro();
+            });
+
+            setInterval(cambiarColorCuadro, 150);
+
+            function positionCuadro() {
+                const tempSpan = document.createElement('span');
+                tempSpan.textContent = "mundo";
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.whiteSpace = 'nowrap';
+                tempSpan.style.fontFamily = mainTextParagraph.style.fontFamily || window.getComputedStyle(mainTextParagraph).fontFamily;
+                tempSpan.style.fontSize = mainTextParagraph.style.fontSize || window.getComputedStyle(mainTextParagraph).fontSize;
+                tempSpan.style.lineHeight = mainTextParagraph.style.lineHeight || window.getComputedStyle(mainTextParagraph).lineHeight;
+
+                mainTextParagraph.appendChild(tempSpan);
+
+                const textRect = tempSpan.getBoundingClientRect();
+                const pRect = mainTextParagraph.getBoundingClientRect();
+
+                const initialLeft = textRect.right - pRect.left + -31;
+                const initialTop = textRect.top - pRect.top + (textRect.height / 0.68) - (cuadro.offsetHeight / 2);
+
+                cuadro.style.left = `${initialLeft + currentLeftPosition}px`;
+                // Aplica el desplazamiento vertical configurado
+                cuadro.style.top = `${initialTop + currentTopPosition}px`;
+
+                mainTextParagraph.removeChild(tempSpan);
+            }
+
+            positionCuadro();
+            window.addEventListener('resize', positionCuadro);
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
