@@ -24,14 +24,14 @@
             border-radius: 8px;
             overflow: hidden;
             background-color: #fff;
-            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.15); /* Sombra más pronunciada */
             position: relative;
         }
         #chatOutput {
             flex-grow: 1;
             padding: 16px;
             overflow-y: auto;
-            border-bottom: 16px solid #eee;
+            border-bottom: 8px solid #eee; /* Borde inferior más delgado */
         }
         #chatOutput p {
             margin: 8px 0;
@@ -46,27 +46,28 @@
         }
         #input-container {
             display: flex;
-            padding: 4px;
+            padding: 10px; /* Más padding para el contenedor de entrada */
             border-top: 4px solid #eee;
+            align-items: center; /* Centrar verticalmente los elementos */
         }
         #userInput {
             flex-grow: 1;
-            padding: 8px;
-            border: 8px solid #ccc;
-            border-radius: 8px;
-            margin-right: 8px;
-            font-size: 8px;
+            padding: 12px; /* Más padding */
+            border: 1px solid #ccc; /* Borde más delgado */
+            border-radius: 5px; /* Bordes más suaves */
+            margin-right: 10px; /* Más espacio a la derecha */
+            font-size: 16px; /* Tamaño de fuente más grande */
             resize: none;
         }
         #sendButton {
-            padding: 8px 8px;
+            padding: 12px 20px; /* Más padding para un botón más grande */
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 8
-            10px;
+            border-radius: 5px; /* Bordes más suaves */
             cursor: pointer;
-            font-size: 10px;
+            font-size: 16px; /* Tamaño de fuente más grande */
+            transition: background-color 0.40s ease; /* Transición suave al pasar el ratón */
         }
         #sendButton:hover {
             background-color: #0056b3;
@@ -77,11 +78,10 @@
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            padding: 4px 4px; /* Mantener un padding para que el cuadro tenga un tamaño mínimo */
+            padding: 4px 4px;
             background-color: #3498db;
             border: 3px solid #2980b9;
             color: white;
-            /* font-size y font-weight ya no son tan relevantes si no hay texto, pero se pueden mantener */
             font-size: 10px;
             font-weight: bold;
             box-shadow: 10px 1px 1px rgba(0, 0, 0, 0.2);
@@ -105,7 +105,7 @@
 <body>
     <div id="chat-container">
         <div id="chatOutput">
-            <p id="mainText"><strong>ROBOT LLAVES BELLO ANTOQUIA:</strong> ¡Hola! Soy tu asistente de IA . La página está en construcción, Prepárate para conocer la última, tecnología, más avazada del mundo Al alcance de todos, Democratización de la IA, Bello Antioquia Colombia Al mundo</p>
+            <p id="mainText"><strong>ROBOT DE LLAVES BELLO ANTOQUIA:</strong> ¡Hola! Soy tu asistente de IA . La página está en construcción, Democratización de la IA, Bello Antioquia Colombia </p>
             <div id="contenedorCuadro"></div>
         </div>
         <div id="input-container">
@@ -118,30 +118,60 @@
         document.addEventListener('DOMContentLoaded', function() {
             const cuadro = document.getElementById('contenedorCuadro');
             const mainTextParagraph = document.getElementById('mainText');
+            const userInput = document.getElementById('userInput');
 
-            cuadro.textContent = ''; // Inicializa sin texto
+            cuadro.textContent = '';
 
             const colores = ['#3498db', '#e74c3c', '#27ae60', '#f1c40f', '#9b59b6', '#1abc9c'];
             let indiceColorActual = 0;
-            let currentLeftPosition = 0; // Se mantiene en 0 para estabilidad horizontal
-            // *** Línea de configuración para el desplazamiento vertical ***
-            // Ajusta este valor para mover el cuadro arriba o abajo desde su posición original.
-            // Un valor positivo lo mueve hacia abajo, un valor negativo lo mueve hacia arriba.
-            let currentTopPosition = 0; // Por ejemplo, pon -10 para moverlo 10px arriba, o 20 para 20px abajo.
+            let currentLeftPosition = 0;
+            let currentTopPosition = 0;
 
-            function cambiarColorCuadro() {
+            let blinkInterval;
+            const normalBlinkSpeed = 290; // ¡Ajustado para un parpadeo más rápido!
+            const fastBlinkSpeed = 40;
+
+            let isVisible = true; // Variable para controlar la visibilidad
+
+            function toggleVisibilityAndColor() {
+                // Alternar visibilidad
+                isVisible = !isVisible;
+                cuadro.style.opacity = isVisible ? '1' : '0';
+
+                // Cambiar color (siempre, independientemente de la visibilidad)
                 indiceColorActual = (indiceColorActual + 1) % colores.length;
                 cuadro.style.backgroundColor = colores[indiceColorActual];
                 cuadro.style.borderColor = colores[indiceColorActual];
-                cuadro.textContent = ''; // Asegura que no tenga texto al cambiar de color
-                positionCuadro(); // Reposiciona el cuadro en caso de cambio de tamaño
+                cuadro.textContent = '';
+                positionCuadro();
+            }
+
+            function startBlinking(speed) {
+                clearInterval(blinkInterval);
+                blinkInterval = setInterval(toggleVisibilityAndColor, speed);
             }
 
             cuadro.addEventListener('click', function() {
-                cambiarColorCuadro();
+                toggleVisibilityAndColor();
             });
 
-            setInterval(cambiarColorCuadro, 150);
+            startBlinking(normalBlinkSpeed);
+
+            let typingTimeout;
+
+            userInput.addEventListener('input', function() {
+                startBlinking(fastBlinkSpeed);
+
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    startBlinking(normalBlinkSpeed);
+                }, 500);
+            });
+
+            userInput.addEventListener('blur', function() {
+                clearTimeout(typingTimeout);
+                startBlinking(normalBlinkSpeed);
+            });
 
             function positionCuadro() {
                 const tempSpan = document.createElement('span');
@@ -162,7 +192,6 @@
                 const initialTop = textRect.top - pRect.top + (textRect.height / 0.68) - (cuadro.offsetHeight / 2);
 
                 cuadro.style.left = `${initialLeft + currentLeftPosition}px`;
-                // Aplica el desplazamiento vertical configurado
                 cuadro.style.top = `${initialTop + currentTopPosition}px`;
 
                 mainTextParagraph.removeChild(tempSpan);
@@ -172,6 +201,5 @@
             window.addEventListener('resize', positionCuadro);
         });
     </script>
-    <script src="script.js"></script>
 </body>
 </html>
