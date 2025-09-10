@@ -7,35 +7,40 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 10px;
-            padding: 10px;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            height: 95vh;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             background-color: #f4f4f4;
         }
         #chat-container {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            max-width: 600px;
-            margin: 1px auto;
+            max-width: 400px;
+            width: 90%;
             border: 1px solid #ccc;
             border-radius: 8px;
             overflow: hidden;
             background-color: #fff;
-            box-shadow: 0 0 15px rgba(0,0,0,0.15); /* Sombra más pronunciada */
             position: relative;
+            box-sizing: border-box;
+            max-height: 90vh;
         }
         #chatOutput {
             flex-grow: 1;
-            padding: 16px;
+            padding: 10px;
             overflow-y: auto;
-            border-bottom: 8px solid #eee; /* Borde inferior más delgado */
+            border-bottom: 4px solid #eee;
         }
         #chatOutput p {
             margin: 8px 0;
             line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
         }
         #chatOutput p strong {
             color: #333;
@@ -46,159 +51,278 @@
         }
         #input-container {
             display: flex;
-            padding: 10px; /* Más padding para el contenedor de entrada */
-            border-top: 4px solid #eee;
-            align-items: center; /* Centrar verticalmente los elementos */
+            padding: 8px;
+            border-top: 2px solid #eee;
+            align-items: center;
         }
         #userInput {
             flex-grow: 1;
-            padding: 12px; /* Más padding */
-            border: 1px solid #ccc; /* Borde más delgado */
-            border-radius: 5px; /* Bordes más suaves */
-            margin-right: 10px; /* Más espacio a la derecha */
-            font-size: 16px; /* Tamaño de fuente más grande */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 8px;
+            font-size: 14px;
             resize: none;
         }
-        #sendButton {
-            padding: 12px 20px; /* Más padding para un botón más grande */
+        #sendButton, #voiceButton {
+            padding: 10px 14px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px; /* Bordes más suaves */
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 16px; /* Tamaño de fuente más grande */
-            transition: background-color 0.40s ease; /* Transición suave al pasar el ratón */
+            font-size: 14px;
+            transition: background-color 0.40s ease;
         }
         #sendButton:hover {
             background-color: #0056b3;
         }
-
-        /* Estilos para el cuadro que se adapta al texto */
-        #contenedorCuadro {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
+        #voiceButton {
+            background-color: #28a745;
+            margin-left: 8px;
+        }
+        #voiceButton:hover {
+            background-color: #218838;
+        }
+        .cuadro-animado {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 5px;
             padding: 4px 4px;
             background-color: #3498db;
             border: 3px solid #2980b9;
             color: white;
             font-size: 10px;
             font-weight: bold;
-            box-shadow: 10px 1px 1px rgba(0, 0, 0, 0.2);
+            box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
             transition: all 0.1s ease;
             cursor: pointer;
             border-radius: 1px;
             text-align: center;
-
-            position: absolute;
-            z-index: 1000;
         }
-
-        #contenedorCuadro:hover {
+        .cuadro-animado:hover {
             transform: scale(1.1);
         }
     </style>
-
     <meta name="google-site-verification" content="Y07CzFRTyOVKXp3pfpySdEjCU4i8LgH95O8WwVMH7kQ" />
 </head>
-
 <body>
     <div id="chat-container">
         <div id="chatOutput">
-            <p id="mainText"><strong>ROBOT DE LLAVES BELLO ANTOQUIA:</strong> ¡Hola! Soy tu asistente de IA . La página está en construcción, Democratización de la IA, Bello Antioquia Colombia </p>
-            <div id="contenedorCuadro"></div>
+            <p><strong>ROBOT DE LLAVES BELLO ANTOQUIA:</strong> ¡Hola! Soy tu asistente de IA . La página está en construcción, Democratización de la IA, Bello Antioquia Colombia </p>
         </div>
         <div id="input-container">
             <textarea id="userInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
             <button id="sendButton">Enviar</button>
+            <button id="voiceButton">🎤</button>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const cuadro = document.getElementById('contenedorCuadro');
-            const mainTextParagraph = document.getElementById('mainText');
+            const chatOutput = document.getElementById('chatOutput');
             const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const voiceButton = document.getElementById('voiceButton');
+            
+            const GEMINI_API_KEY = 'AIzaSyDzG9QTexK4Vgb9EmdtwkBdEeUgFN33ZyM';
 
-            cuadro.textContent = '';
+            const precios = {
+                'tornillo': '45.000',
+                'soldadura': '60.000',
+                'llave_sencilla': '3.000',
+                'llave_color': '3.500',
+                'duplicado_casa': '3.000'
+            };
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+                
+                addMessage('Tú', message);
+                userInput.value = '';
+
+                const thinkingMessage = addMessage('ROBOT', 'Escribiendo...', 'thinking');
+                
+                const respuestaRobot = await getRobotResponse(message);
+                
+                thinkingMessage.innerHTML = `<strong>ROBOT:</strong> ${respuestaRobot}`;
+                thinkingMessage.classList.remove('thinking');
+                
+                startBlinking(thinkingMessage);
+                speakText(respuestaRobot); // Aquí se llama a la función para leer la respuesta final
+            }
+
+            async function getRobotResponse(mensajeUsuario) {
+                const mensajeNormalizado = mensajeUsuario.toLowerCase().trim();
+                let respuesta = '';
+
+                if (mensajeNormalizado.includes('soldadura') && (mensajeNormalizado.includes('cuesta') || mensajeNormalizado.includes('vale'))) {
+                    respuesta = 'El cambio de clave para una chapa con soldadura vale ' + precios.soldadura + '.';
+                } else if (mensajeNormalizado.includes('tornillo') && (mensajeNormalizado.includes('cuesta') || mensajeNormalizado.includes('vale'))) {
+                    respuesta = 'El cambio de clave para una chapa con tornillos tiene un valor de ' + precios.tornillo + '.';
+                } else if (mensajeNormalizado.includes('chapa') || mensajeNormalizado.includes('cambio de clave')) {
+                    respuesta = '¿Está fijada con tornillo o con soldadura?';
+                } else if (mensajeNormalizado.includes('llave')) {
+                    if (mensajeNormalizado.includes('a color') || mensajeNormalizado.includes('con imagen')) {
+                        respuesta = 'Llave a color, ' + precios.llave_color + '.';
+                    } else if (mensajeNormalizado.includes('sencilla') || mensajeNormalizado.includes('de casa') || mensajeNormalizado.includes('sin color')) {
+                        respuesta = 'Llave sencilla, ' + precios.llave_sencilla + '.';
+                    } else {
+                        respuesta = 'Depende del tipo de llave.';
+                    }
+                } else if (mensajeNormalizado.includes('duplicado')) {
+                    if (mensajeNormalizado.includes('llave')) {
+                        respuesta = 'El duplicado de una llave cuesta ' + precios.llave_sencilla + '.';
+                    } else if (mensajeNormalizado.includes('casa')) {
+                        respuesta = 'El duplicado de escrituras de casa tiene un valor de ' + precios.duplicado_casa + '.';
+                    } else {
+                        respuesta = 'Por favor, dime si es un duplicado de llave o de casa.';
+                    }
+                } else if (mensajeNormalizado.includes('quién es alexander') || mensajeNormalizado.includes('quien es alexander amaya') || mensajeNormalizado.includes('quien es alexander amaya atehortua') || mensajeNormalizado.includes('quien es alex') || mensajeNormalizado.includes('quién es alex')) {
+                    respuesta = 'Alexander Amaya Atehortua es el creador de mi funcionamiento, es el programador y desarrollador de esta inteligencia artificial.';
+                } else if (mensajeNormalizado.includes('quién eres') || mensajeNormalizado.includes('quien eres tu') || mensajeNormalizado.includes('eres un robot') || mensajeNormalizado.includes('quién es usted') || mensajeNormalizado.includes('quien eres') || mensajeNormalizado.includes('quien es usted')) {
+                    respuesta = 'Mi nombre es Orión, soy un robot de inteligencia artificial programado por Alexander Amaya Atehortua, para ayudarte con tus necesidades de cerrajería y reparaciones.';
+                } else if (mensajeNormalizado.includes('hola') || mensajeNormalizado.includes('saludo') || mensajeNormalizado.includes('qué tal')) {
+                    respuesta = "Hola, soy Orión! ¿en qué puedo ayudarte?";
+                } else if (mensajeNormalizado.includes('de dónde eres') || mensajeNormalizado.includes('de donde eres') || mensajeNormalizado.includes('donde vives') || mensajeNormalizado.includes('donde estas')) {
+                    respuesta = 'De Colombia, Medellin Bello Antioquia el Meza';
+                } else {
+                    try {
+                        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: mensajeUsuario
+                                    }]
+                                }]
+                            }),
+                        });
+
+                        const data = await response.json();
+                        if (data.candidates && data.candidates.length > 0) {
+                            respuesta = data.candidates[0].content.parts[0].text;
+                        } else {
+                            respuesta = 'Dentro de muy poco, lo que me quieran preguntar, tendré respuestas definidas, por el momento, estoy aprendiendo de los humanos.';
+                        }
+                    } catch (error) {
+                        console.error('Error al llamar a la API de Gemini:', error);
+                        respuesta = 'Hubo un problema al conectar con el servidor. ¿Puedes intentarlo de nuevo?';
+                    }
+                }
+                return respuesta;
+            }
+
+            function addMessage(sender, text, className = '') {
+                const p = document.createElement('p');
+                p.innerHTML = `<strong>${sender}:</strong> ${text}`;
+                if (className) {
+                    p.classList.add(className);
+                }
+                chatOutput.appendChild(p);
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+                return p;
+            }
+
+            function speakText(text) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                window.speechSynthesis.speak(utterance);
+            }
+
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+
+            voiceButton.addEventListener('click', function() {
+                recognition.start();
+                voiceButton.textContent = 'Pensando..';
+            });
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                voiceButton.textContent = '🎤';
+                sendMessage();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error de reconocimiento de voz:', event.error);
+                voiceButton.textContent = '🎤';
+            };
 
             const colores = ['#3498db', '#e74c3c', '#27ae60', '#f1c40f', '#9b59b6', '#1abc9c'];
             let indiceColorActual = 0;
-            let currentLeftPosition = 0;
-            let currentTopPosition = 0;
-
             let blinkInterval;
-            const normalBlinkSpeed = 290; // ¡Ajustado para un parpadeo más rápido!
+            const normalBlinkSpeed = 290;
             const fastBlinkSpeed = 40;
-
-            let isVisible = true; // Variable para controlar la visibilidad
+            let isVisible = true;
+            let cuadro;
 
             function toggleVisibilityAndColor() {
-                // Alternar visibilidad
                 isVisible = !isVisible;
-                cuadro.style.opacity = isVisible ? '1' : '0';
-
-                // Cambiar color (siempre, independientemente de la visibilidad)
-                indiceColorActual = (indiceColorActual + 1) % colores.length;
-                cuadro.style.backgroundColor = colores[indiceColorActual];
-                cuadro.style.borderColor = colores[indiceColorActual];
-                cuadro.textContent = '';
-                positionCuadro();
+                if (cuadro) {
+                    cuadro.style.opacity = isVisible ? '1' : '0';
+                    indiceColorActual = (indiceColorActual + 1) % colores.length;
+                    cuadro.style.backgroundColor = colores[indiceColorActual];
+                    cuadro.style.borderColor = colores[indiceColorActual];
+                }
             }
 
-            function startBlinking(speed) {
+            function startBlinking(element) {
+                const oldCuadro = document.querySelector('.cuadro-animado');
+                if (oldCuadro) {
+                    oldCuadro.remove();
+                }
+
+                cuadro = document.createElement('div');
+                cuadro.className = 'cuadro-animado';
+
+                element.appendChild(cuadro);
+
                 clearInterval(blinkInterval);
-                blinkInterval = setInterval(toggleVisibilityAndColor, speed);
+                blinkInterval = setInterval(toggleVisibilityAndColor, normalBlinkSpeed);
             }
-
-            cuadro.addEventListener('click', function() {
-                toggleVisibilityAndColor();
-            });
-
-            startBlinking(normalBlinkSpeed);
 
             let typingTimeout;
-
             userInput.addEventListener('input', function() {
-                startBlinking(fastBlinkSpeed);
-
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    startBlinking(normalBlinkSpeed);
-                }, 500);
+                if (cuadro) {
+                    clearInterval(blinkInterval);
+                    blinkInterval = setInterval(toggleVisibilityAndColor, fastBlinkSpeed);
+                    clearTimeout(typingTimeout);
+                    typingTimeout = setTimeout(() => {
+                        clearInterval(blinkInterval);
+                        blinkInterval = setInterval(toggleVisibilityAndColor, normalBlinkSpeed);
+                    }, 500);
+                }
             });
-
             userInput.addEventListener('blur', function() {
                 clearTimeout(typingTimeout);
-                startBlinking(normalBlinkSpeed);
+                if (cuadro) {
+                    clearInterval(blinkInterval);
+                    blinkInterval = setInterval(toggleVisibilityAndColor, normalBlinkSpeed);
+                }
             });
 
-            function positionCuadro() {
-                const tempSpan = document.createElement('span');
-                tempSpan.textContent = "mundo";
-                tempSpan.style.visibility = 'hidden';
-                tempSpan.style.position = 'absolute';
-                tempSpan.style.whiteSpace = 'nowrap';
-                tempSpan.style.fontFamily = mainTextParagraph.style.fontFamily || window.getComputedStyle(mainTextParagraph).fontFamily;
-                tempSpan.style.fontSize = mainTextParagraph.style.fontSize || window.getComputedStyle(mainTextParagraph).fontSize;
-                tempSpan.style.lineHeight = mainTextParagraph.style.lineHeight || window.getComputedStyle(mainTextParagraph).lineHeight;
-
-                mainTextParagraph.appendChild(tempSpan);
-
-                const textRect = tempSpan.getBoundingClientRect();
-                const pRect = mainTextParagraph.getBoundingClientRect();
-
-                const initialLeft = textRect.right - pRect.left + -31;
-                const initialTop = textRect.top - pRect.top + (textRect.height / 0.68) - (cuadro.offsetHeight / 2);
-
-                cuadro.style.left = `${initialLeft + currentLeftPosition}px`;
-                cuadro.style.top = `${initialTop + currentTopPosition}px`;
-
-                mainTextParagraph.removeChild(tempSpan);
-            }
-
-            positionCuadro();
-            window.addEventListener('resize', positionCuadro);
+            window.addEventListener('resize', () => {
+                const lastRobotMessage = chatOutput.lastElementChild;
+                if (lastRobotMessage && lastRobotMessage.querySelector('.cuadro-animado')) {
+                    const existingCuadro = lastRobotMessage.querySelector('.cuadro-animado');
+                    existingCuadro.style.left = '';
+                    existingCuadro.style.bottom = '';
+                    existingCuadro.style.top = '';
+                }
+            });
         });
     </script>
 </body>
