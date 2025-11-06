@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot de Cerrajero (FINAL v23 - Voz Femenina/Latina)</title>
+    <title>Chatbot de Cerrajero (FINAL v24 - Hip Hop y Compatibilidad)</title>
     
     <style>
         /* --- ESTILOS CSS --- */
@@ -79,7 +79,7 @@
         }
 
         #userInput {
-            flex-grow: 1; /* Corregí el error de sintaxis aquí (quitando el '= 1') */
+            flex-grow: 1; 
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 20px;
@@ -116,7 +116,7 @@
             background-color: #ff9800;
         }
         
-        /* Nuevo estilo para botones desactivados */
+        /* Estilo para botones desactivados */
         #micButton:disabled {
             background-color: #ccc;
             cursor: not-allowed;
@@ -147,38 +147,30 @@
         // --- LÓGICA DE VOZ (Speech Synthesis) ---
         const synth = window.speechSynthesis;
         
-        // Variable global para almacenar las voces disponibles
+        // Bandera para control de voz
         let voices = []; 
-        let speechEnabled = ('speechSynthesis' in window); // Bandera de control
+        let speechEnabled = ('speechSynthesis' in window); 
 
-        // Función para obtener las voces una vez que el motor de síntesis esté listo
         function populateVoiceList() {
           voices = speechSynthesis.getVoices();
         }
 
-        // Escuchar el evento que indica que el sistema ha cargado las voces
         if (speechEnabled) {
           populateVoiceList(); 
           speechSynthesis.onvoiceschanged = populateVoiceList;
         }
         
-        // FUNCIÓN CENTRAL PARA HABLAR
         const hablar = (texto) => {
-            // Solo intenta hablar si la función de voz está disponible
             if (!speechEnabled) {
-                console.log("Síntesis de voz deshabilitada o no soportada.");
                 return;
             }
             
-            // ELIMINAR ASTERISCOS (**) ANTES DE HABLAR
             const textoLimpio = texto.replace(/\*\*/g, '');
-            
             const utterance = new SpeechSynthesisUtterance(textoLimpio);
             
             // --- LÓGICA DE SELECCIÓN DE VOZ REFORZADA ---
             let selectedVoice = null;
             
-            // 1. Intentar seleccionar una voz conocida de Google que suene neutral/latina
             selectedVoice = voices.find(voice => 
                 voice.lang.startsWith('es') && (
                 voice.name.includes('Google español (Estados Unidos)') || 
@@ -187,7 +179,6 @@
                 )
             );
             
-            // 2. Si no la encuentra, intentar una voz genérica de mujer
             if (!selectedVoice) {
                 selectedVoice = voices.find(voice => 
                     voice.lang.startsWith('es') && 
@@ -195,17 +186,14 @@
                 );
             }
             
-            // 3. Aplicar la voz o la configuración de idioma de respaldo
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
                 utterance.lang = selectedVoice.lang; 
             } else {
-                // Opción final de respaldo: Forzar el acento Español de EE. UU. (más neutral que el de España)
                 utterance.lang = 'es-US'; 
             }
             // ------------------------------------
             
-            // Configuración de velocidad y tono
             utterance.rate = 1.0; 
             utterance.pitch = 1.0; 
             
@@ -217,14 +205,14 @@
         let recognition = null;
         let isListening = false;
         const micButton = document.getElementById('micButton');
-        let recognitionEnabled = false; // Bandera para control del micrófono
+        let recognitionEnabled = false; 
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.lang = 'es-ES';
             recognition.interimResults = false;
-            recognitionEnabled = true; // El navegador soporta la función
+            recognitionEnabled = true; 
 
             recognition.onstart = () => {
                 isListening = true;
@@ -261,14 +249,12 @@
                 document.getElementById('userInput').placeholder = "Escribe o habla aquí...";
             };
         } else {
-            // Si el navegador no soporta el reconocimiento, desactivamos el botón
             micButton.style.display = 'none'; 
-            micButton.disabled = true; // Agregado para robustez
+            micButton.disabled = true; 
         }
 
         function iniciarReconocimiento() {
             if (recognition && recognitionEnabled) {
-                // Cancela cualquier voz antes de iniciar la escucha o detenerla
                 window.speechSynthesis.cancel(); 
 
                 if (isListening) {
@@ -321,7 +307,7 @@
         const respuestaSaludo = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
         const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
 
-        // Respuestas de Cerrajería (sin cambios)
+        // Respuestas de Cerrajería
         const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**`;
         const respuestaAperturaCarro = `La apertura de carro vale **70.000 COP** con domicilio. Si su carro es un modelo más optimizado (nuevo o con seguridad especial), es mejor enviar una foto o comunicarse directamente con el técnico vía **WhatsApp al ${NUMERO_MOVIL}**.`;
         const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
@@ -344,7 +330,6 @@
             
             if (!userText.trim()) return;
             
-            // Cancela cualquier voz (si está activa)
             if (speechEnabled) window.speechSynthesis.cancel(); 
 
             mostrarMensaje(userText, 'user-message');
@@ -352,7 +337,7 @@
             setTimeout(() => {
                 const botResponse = obtenerRespuesta(userText);
                 mostrarMensaje(botResponse, 'bot-message');
-                hablar(botResponse); // EL CHATBOT HABLA LA RESPUESTA (si speechEnabled es true)
+                hablar(botResponse); 
             }, 500);
 
             userInput.value = '';
@@ -394,7 +379,7 @@
             }
 
 
-            // 3. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA (Respuesta directa a llamar)
+            // 3. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA 
             for (const clave of palabrasClaveContacto) {
                 if (textoNormalizado.includes(clave)) {
                     return respuestaContacto; 
@@ -433,7 +418,7 @@
                 return respuestaPrecios; 
             }
             
-            // 8. PRIORIDAD BAJA: PRECIOS/COSTOS (Genéricos que pueden referirse a cualquier cosa)
+            // 8. PRIORIDAD BAJA: PRECIOS/COSTOS (Genéricos)
             let esPreguntaDePrecioGenerico = false;
             for (const clave of palabrasClavePrecios) {
                 if (textoNormalizado.includes(clave)) {
@@ -447,7 +432,7 @@
             }
 
 
-            // 9. PRIORIDAD: TIEMPO/DURACIÓN (Arregla "Cuánto termina" y similares)
+            // 9. PRIORIDAD: TIEMPO/DURACIÓN 
             for (const clave of palabrasClaveTiempo) {
                 if (textoNormalizado.includes(clave) || textoNormalizado.includes("termina") || textoNormalizado.includes("desocupa")) {
                     return respuestaTiempo; 
@@ -498,16 +483,18 @@
             }
         });
 
-        // Mensaje de bienvenida inicial
+        // Mensaje de bienvenida inicial y chequeo de compatibilidad
         window.onload = () => {
-            // Aseguramos que el botón de micrófono esté oculto si la función no es soportada
             if (!recognitionEnabled) {
                  micButton.style.display = 'none';
+                 console.warn("Reconocimiento de voz (micrófono) deshabilitado por el navegador o el entorno (ej: GitHub sin HTTPS).");
+            }
+            if (!speechEnabled) {
+                 console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
             }
             
             const mensajeInicial = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
             mostrarMensaje(mensajeInicial, 'bot-message');
-            // La función 'hablar' se encargará de verificar si debe hablar o no.
             hablar(mensajeInicial); 
         }
     </script>
