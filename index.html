@@ -1,16 +1,9 @@
-
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot de Cerrajero (FINAL v26 - Voz Optimizada)</title>
+    <title>Chatbot de Cerrajero (FINAL v27 - Texto Deslizante)</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-PYYYEKQYGJ"></script>
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-BTNX589XJM"></script>
@@ -30,12 +23,44 @@
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             display: flex;
+            flex-direction: column; /* Cambiado a columna para el banner superior */
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding-top: 50px; /* Espacio para que el banner superior no se pegue */
         }
 
+        /* --- ESTILOS DEL BANNER DESLIZANTE (MARQUEE CSS) --- */
+        .marquee-container {
+            position: fixed; /* Fijo en la parte superior */
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ff9800; /* Naranja llamativo */
+            color: white;
+            padding: 5px 0;
+            overflow: hidden; /* Oculta el texto que se sale del contenedor */
+            white-space: nowrap; /* Asegura que el texto permanezca en una sola línea */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000; /* Asegura que esté por encima del chatbot */
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            padding-left: 100%; /* Inicia el texto fuera de la vista a la derecha */
+            animation: marquee 15s linear infinite; /* 15s es la velocidad, 'linear' para suavidad, 'infinite' para que no pare */
+        }
+
+        /* Definición de la animación de desplazamiento */
+        @keyframes marquee {
+            0%   { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); } /* Mueve el contenido hacia la izquierda un 100% */
+        }
+        
+        /* --- ESTILOS DEL CHATBOT --- */
         .chatbot-container {
             width: 100%;
             max-width: 400px;
@@ -156,6 +181,12 @@
 </head>
 <body>
 
+    <div class="marquee-container">
+        <div class="marquee-content">
+            🚀 Vende más en tus redes: Creemos un Chatbot a tu medida, como este. ¡Pregúntanos cómo tener el tuyo! 
+        </div>
+    </div>
+
     <div class="chatbot-container">
         <header>
             <h1>🔒 Cerrajero Asistente</h1>
@@ -242,7 +273,6 @@
 
             if (isVoiceActive) {
                 button.textContent = '🔊 Voz: ON';
-                button.style.backgroundColor = 'none';
                 button.style.backgroundColor = 'transparent'; 
                 // Opcional: Hablar una confirmación rápida
                 hablar("Voz activada."); 
