@@ -306,8 +306,12 @@
         // --- BASE DE CONOCIMIENTO Y RESPUESTAS ---
         const palabrasClaveSaludos = ["hola", "buenos dias", "buenas tardes", "buenas noches", "saludo"];
         const palabrasClaveEstado = ["como esta", "como va", "que tal"];
-        const palabrasClaveIdentidad = ["quien eres", "que eres", "eres un bot", "eres una ia", "quien te creo"]; 
-        const palabrasClaveOrigen = ["de donde eres", "de donde es", "donde estas", "ubicacion", "de donde son"]; // <-- ¡NUEVA CLAVE!
+        
+        // Claves separadas para identidad
+        const palabrasClaveIdentidad = ["quien eres", "que eres", "eres un bot", "eres una ia"]; 
+        const palabrasClaveCreador = ["quien te creo", "quien te hizo", "como te hicieron"]; 
+
+        const palabrasClaveOrigen = ["de donde eres", "de donde es", "donde estas", "ubicacion", "de donde son"]; 
         const palabrasClaveContacto = ["numero", "telefono", "whatsapp", "contacto", "llamar", "cual es", "urgente", "comunique", "tecnico"]; 
         const palabrasClaveTiempo = ["cuando", "cuanto", "termina", "demora", "tiempo"];
         const palabrasClavePrecios = ["precio", "costo", "tarifa", "cuanto vale", "cuánto cuesta", "abre chapa"]; 
@@ -321,8 +325,13 @@
 
         const respuestaSaludo = `¡Hola! Somos cerrajería a domicilio. Por favor, para un servicio **rápido y urgente**, envíanos tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**.`; 
         const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
-        const respuestaIdentidad = `Soy una **Inteligencia Artificial** del Valle de Aburrá, **Medellín - Colombia**, programada para asistirte con la base de datos de la cerrajería. Mi objetivo es darte información rápida y contactarte con el técnico **Alexander**.`; 
-        const respuestaOrigen = "soy de Bello Antioquia, Medellín Colombia."; // <-- ¡NUEVA RESPUESTA ESPECÍFICA!
+        
+        // RESPUESTAS DE IDENTIDAD ACTUALIZADAS:
+        const respuestaIdentidad = "Soy una inteligencia artificial trabajando en una ley de datos.";
+        // ** MODIFICACIÓN SOLICITADA AQUÍ **
+        const respuestaCreador = "Fui creado por Alexander Amaya Atehortua, experto de la IA, software y hardware. ¿En qué servicio de cerrajería puedo ayudarte?"; 
+        
+        const respuestaOrigen = "Bello Antioquia, Medellín Colombia."; 
         const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**. Ofrecemos **apertura de puertas/carros, cambio de clave y servicios a domicilio**.`;
         const respuestaAperturaCarro = `La apertura de carro vale **70.000 COP** con domicilio. Si su carro es un modelo más optimizado (nuevo o con seguridad especial), es mejor enviar una foto o comunicarse directamente con el técnico vía **WhatsApp al ${NUMERO_MOVIL}**.`;
         const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
@@ -391,7 +400,7 @@
                 }
             }
             
-            // ⭐ 1.6 PRIORIDAD: ORIGEN ESPECÍFICO (¡NUEVO BLOQUE!) ⭐
+            // 1.6 PRIORIDAD: ORIGEN ESPECÍFICO 
             for (const clave of palabrasClaveOrigen) {
                 if (textoNormalizado.includes(clave)) {
                     enviarIntencion('origen_bot'); 
@@ -399,7 +408,16 @@
                 }
             }
             
-            // 2. PRIORIDAD: IDENTIDAD (Pregunta general "quien eres")
+            // 2. PRIORIDAD: IDENTIDAD (Lógica para separar creador de identidad general)
+            // A) PREGUNTA POR EL CREADOR
+            for (const clave of palabrasClaveCreador) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('creador_bot'); 
+                    return respuestaCreador; 
+                }
+            }
+            
+            // B) PREGUNTA GENERAL DE IDENTIDAD
             for (const clave of palabrasClaveIdentidad) {
                 if (textoNormalizado.includes(clave)) {
                     enviarIntencion('identidad_bot'); 
