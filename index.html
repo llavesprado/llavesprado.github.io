@@ -1,19 +1,20 @@
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
-    <meta
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-
-    <meta name="google-site-verification" content="5LseTdnrVvB0a4aEMx4vFb1X3IcRC9cRCejvfbkKjLc" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot de Cerrajero (FINAL v25 - Optimizado para Hosting)</title>
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYYYEKQYGJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-PYYYEKQYGJ');
+    </script>
+    
+    <meta name="google-site-verification" content="5LseTdnrVvB0a4aEMx4vFb1X3IcRC9cRCejvfbkKjLc" />
     
     <style>
         /* --- ESTILOS CSS --- */
@@ -89,7 +90,7 @@
         }
 
         #userInput {
-            flex-grow: 1; 
+            flex-grow = 1; 
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 20px;
@@ -157,7 +158,6 @@
         // --- LÓGICA DE VOZ (Speech Synthesis) ---
         const synth = window.speechSynthesis;
         
-        // Bandera para control de voz
         let voices = []; 
         let speechEnabled = ('speechSynthesis' in window); 
 
@@ -175,7 +175,6 @@
                 return;
             }
             
-            // Si el navegador está escuchando, cancela el reconocimiento antes de hablar (buena práctica)
             if (isListening) {
                 recognition.stop();
             }
@@ -183,7 +182,6 @@
             const textoLimpio = texto.replace(/\*\*/g, '');
             const utterance = new SpeechSynthesisUtterance(textoLimpio);
             
-            // --- LÓGICA DE SELECCIÓN DE VOZ REFORZADA ---
             let selectedVoice = null;
             
             selectedVoice = voices.find(voice => 
@@ -207,7 +205,6 @@
             } else {
                 utterance.lang = 'es-US'; 
             }
-            // ------------------------------------
             
             utterance.rate = 1.0; 
             utterance.pitch = 1.0; 
@@ -227,13 +224,18 @@
             recognition.continuous = false;
             recognition.lang = 'es-ES';
             recognition.interimResults = false;
-            recognitionEnabled = true; // Habilita si la API está presente
+            recognitionEnabled = true; 
 
             recognition.onstart = () => {
                 isListening = true;
                 micButton.classList.add('listening');
                 micButton.textContent = '🔴';
                 document.getElementById('userInput').placeholder = "Escuchando...";
+                
+                // >> EVENTO GA4: Micrófono usado
+                if (typeof gtag === 'function') {
+                    gtag('event', 'mic_used'); 
+                }
             };
 
             recognition.onresult = (event) => {
@@ -241,7 +243,6 @@
                 document.getElementById('userInput').value = transcript;
                 enviarMensaje();
                 
-                // Estos 3 comandos se ejecutan en onend si no hay actividad
                 isListening = false;
                 micButton.classList.remove('listening');
                 micButton.textContent = '🎙️';
@@ -261,18 +262,14 @@
                 micButton.classList.remove('listening');
                 micButton.textContent = '🎙️';
                 document.getElementById('userInput').placeholder = "Escribe aquí tu solicitud de cerrajería...";
-                
-                // NOTA: En GitHub Pages, el error aquí será 'SecurityError'
             };
         } else {
-             // Si la API NO existe en el navegador, el botón se oculta por defecto.
              micButton.style.display = 'none'; 
              micButton.disabled = true; 
         }
 
         function iniciarReconocimiento() {
             if (recognition && recognitionEnabled) {
-                // Cancelar síntesis si está hablando
                 window.speechSynthesis.cancel(); 
 
                 if (isListening) {
@@ -288,7 +285,7 @@
         
         // --- LÓGICA JAVASCRIPT PRINCIPAL ---
 
-        // DATOS DE CONTACTO (Mantenidos)
+        // DATOS DE CONTACTO
         const NUMERO_MOVIL = "304 465 4556";
         const NUMERO_FIJO = "604 598 1532";
 
@@ -306,7 +303,6 @@
 
 
         // --- BASE DE CONOCIMIENTO Y RESPUESTAS ---
-        // CLAVES DE CERRRAJERÍA
         const palabrasClaveSaludos = ["hola", "buenos dias", "buenas tardes", "buenas noches", "saludo"];
         const palabrasClaveEstado = ["como esta", "como va", "que tal"];
         const palabrasClaveContacto = ["numero", "telefono", "whatsapp", "contacto", "llamar", "cual es", "urgente", "comunique", "tecnico"]; 
@@ -317,35 +313,20 @@
         const palabrasClaveCambioClave = ["cambio de clave", "clave", "soldadura", "cambiar clave", "chapa"];
         const palabrasClaveServicio = ["abrir", "puerta", "llave", "necesito", "tarabajo", "cerrajeria", "arreglar"];
         const palabrasClaveDisponibilidad = ["disponible", "horario", "ahora", "inmediato", "puede", "señor", "estará"];
-
-        // NUEVAS CLAVES DE HIP HOP
         const palabrasClaveHipHop = ["hip hop", "rap", "cultura hip hop", "dj", "graffiti", "breakdance", "mc", "rapero", "ritmo", "flow"];
         const palabrasClaveArtistasHipHop = ["snoop dogg", "eminem", "shakira", "sza", "jay z", "nas", "notorious", "tupac", "calle 13", "vico c"];
 
-        // Respuesta de Saludo (MODIFICADA para ser más proactiva y mencionar WhatsApp)
         const respuestaSaludo = `¡Hola! Somos cerrajería a domicilio. Por favor, para un servicio **rápido y urgente**, envíanos tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**.`; 
-        
         const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
-
-        // Respuestas de Cerrajería
-        // Respuesta Contacto (MODIFICADA para ser más visible y mencionar servicios clave)
         const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**. Ofrecemos **apertura de puertas/carros, cambio de clave y servicios a domicilio**.`;
-        
         const respuestaAperturaCarro = `La apertura de carro vale **70.000 COP** con domicilio. Si su carro es un modelo más optimizado (nuevo o con seguridad especial), es mejor enviar una foto o comunicarse directamente con el técnico vía **WhatsApp al ${NUMERO_MOVIL}**.`;
         const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
         const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
-        const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP**.`;
-        
-        // Respuesta de Disponibilidad (MODIFICADA para enfatizar "a domicilio" y verificar disponibilidad actual, no 24h)
+        const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP** (Setenta mil pesos colombianos).`;
         const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`;
-        
         const respuestaTiempo = `El trabajo actual está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
-
-        // NUEVAS RESPUESTAS DE HIP HOP
         const respuestaHipHopGeneral = "¡El Hip Hop es la voz de la calle y una cultura poderosa! Se basa en cuatro elementos principales: **MCing (rap), DJing, Graffiti y Breakdance**. ¿Quieres saber sobre un artista o un elemento en específico?";
         const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
-        
-        // Respuesta por Defecto (MODIFICADA para reforzar WhatsApp y servicios)
         const respuestaDefault = `Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre tu problema de **cerrajería a domicilio** (apertura/cambio de clave) y comunícate por **WhatsApp (${NUMERO_MOVIL})** para una respuesta más rápida.`;
 
 
@@ -357,10 +338,17 @@
             
             if (!userText.trim()) return;
             
-            // Si el bot está hablando, cancela el habla antes de responder
             if (speechEnabled) window.speechSynthesis.cancel(); 
 
             mostrarMensaje(userText, 'user-message');
+            
+            // >> EVENTO GA4: Mensaje enviado
+            if (typeof gtag === 'function') {
+                gtag('event', 'chat_message_sent', {
+                    'message_length': userText.length,
+                    'user_input_preview': userText.substring(0, 50)
+                });
+            }
 
             setTimeout(() => {
                 const botResponse = obtenerRespuesta(userText);
@@ -371,28 +359,38 @@
             userInput.value = '';
         }
 
-
+        // FUNCIÓN CENTRAL CON EVENTOS GA4 INTEGRADOS
         function obtenerRespuesta(userText) {
             const textoNormalizado = normalizarParaComparar(userText);
             const textoSinEspacios = normalizarParaComparar(userText.replace(/\s/g, '')); 
 
+            // Función de ayuda para enviar el evento a GA4
+            const enviarIntencion = (nombre) => {
+                if (typeof gtag === 'function') {
+                    gtag('event', 'chatbot_intent', {'intent_name': nombre});
+                }
+            };
 
-            // 1. PRIORIDAD: SALUDOS / ESTADO (Social)
+
+            // 1. PRIORIDAD: SALUDOS / ESTADO
             for (const clave of palabrasClaveSaludos) {
                 if (textoNormalizado.includes(clave) || textoSinEspacios.includes(clave.replace(/\s/g, '').replace(' ', ''))) {
+                    enviarIntencion('saludo'); 
                     return respuestaSaludo; 
                 }
             }
             for (const clave of palabrasClaveEstado) {
                 if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('estado');
                     return respuestaEstado; 
                 }
             }
             
-            // 2. NUEVA PRIORIDAD: HIP HOP (Intentamos responder, pero redirigimos a Cerrajería)
+            // 2. PRIORIDAD: HIP HOP (Redirige)
             let esPreguntaDeHipHop = false;
             for (const clave of palabrasClaveHipHop) {
                 if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('interes_hiphop_general');
                     return respuestaHipHopGeneral; 
                 }
             }
@@ -403,13 +401,15 @@
                 }
             }
             if (esPreguntaDeHipHop) {
+                enviarIntencion('interes_hiphop_artista');
                 return respuestaHipHopArtista;
             }
 
 
-            // 3. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA 
+            // 3. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA (¡El evento más importante!)
             for (const clave of palabrasClaveContacto) {
                 if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('contacto_urgente'); 
                     return respuestaContacto; 
                 }
             }
@@ -417,6 +417,7 @@
             // 4. MÁXIMA PRIORIDAD: APERTURA DE CARRO
             for (const clave of palabrasClaveAperturaCarro) {
                 if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('apertura_carro'); 
                     return respuestaAperturaCarro; 
                 }
             }
@@ -424,16 +425,18 @@
             // 5. ALTA PRIORIDAD: APERTURA DE PUERTA (Hogar/Alcoba)
             for (const clave of palabrasClaveAperturaHogar) {
                 if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('apertura_hogar'); 
                     return respuestaAperturaPuerta; 
                 }
             }
             
             // 6. PRIORIDAD MEDIA: PROCESO DE SOLDADURA (Detalle)
             if (textoNormalizado.includes("soldadura") && (textoNormalizado.includes("cambio de clave") || textoNormalizado.includes("como es") || textoNormalizado.includes("proceso"))) {
+                 enviarIntencion('precio_o_cambio_clave'); 
                 return respuestaSoldaduraDetallada; 
             }
             
-            // 7. PRIORIDAD MEDIA: CAMBIO DE CLAVE / PRECIOS ESPECÍFICOS
+            // 7. & 8. PRIORIDAD MEDIA: CAMBIO DE CLAVE / PRECIOS ESPECÍFICOS/GENÉRICOS
             let esPreguntaDeCambioClave = false;
             for (const clave of palabrasClaveCambioClave) {
                 if (textoNormalizado.includes(clave)) {
@@ -441,12 +444,6 @@
                     break;
                 }
             }
-            
-            if (esPreguntaDeCambioClave) {
-                return respuestaPrecios; 
-            }
-            
-            // 8. PRIORIDAD BAJA: PRECIOS/COSTOS (Genéricos)
             let esPreguntaDePrecioGenerico = false;
             for (const clave of palabrasClavePrecios) {
                 if (textoNormalizado.includes(clave)) {
@@ -454,15 +451,15 @@
                     break;
                 }
             }
-            
-            if (esPreguntaDePrecioGenerico) {
+            if (esPreguntaDeCambioClave || esPreguntaDePrecioGenerico) {
+                enviarIntencion('precio_o_cambio_clave'); 
                 return respuestaPrecios; 
             }
-
 
             // 9. PRIORIDAD: TIEMPO/DURACIÓN 
             for (const clave of palabrasClaveTiempo) {
                 if (textoNormalizado.includes(clave) || textoNormalizado.includes("termina") || textoNormalizado.includes("desocupa")) {
+                    enviarIntencion('pregunta_tiempo'); 
                     return respuestaTiempo; 
                 }
             }
@@ -470,7 +467,6 @@
             // 10. PRIORIDAD: DISPONIBILIDAD O SOLICITUD DE SERVICIO (Respuesta General)
             let preguntaPorDisponibilidad = false;
             let esSolicitudServicio = false;
-
             for (const clave of palabrasClaveDisponibilidad) {
                 if (textoNormalizado.includes(clave)) {
                     preguntaPorDisponibilidad = true;
@@ -485,10 +481,12 @@
             }
             
             if (preguntaPorDisponibilidad || esSolicitudServicio) {
+                enviarIntencion('disponibilidad_o_servicio_general');
                 return respuestaOcupadoProactivo; 
             }
 
             // 11. RESPUESTA POR DEFECTO
+            enviarIntencion('desconocido'); 
             return respuestaDefault;
         }
 
@@ -513,19 +511,14 @@
 
         // Mensaje de bienvenida inicial y chequeo de compatibilidad
         window.onload = () => {
-            // Revisa si la API de reconocimiento de voz existe O si el navegador está bloqueando
-            // Si recognitionEnabled es FALSE, el botón ya se oculta en la lógica superior.
             if (!recognitionEnabled) {
                  console.warn("Reconocimiento de voz (micrófono) deshabilitado por el navegador o el entorno (ej: GitHub sin HTTPS).");
-            } else {
-                console.info("Reconocimiento de voz habilitado. Si falla, verifique los permisos de micrófono en el candado de la URL.");
-            }
+            } 
             
             if (!speechEnabled) {
                  console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
             }
             
-            // MENSAJE INICIAL MODIFICADO
             const mensajeInicial = `¡Hola! Somos cerrajería a domicilio. Para un servicio rápido, envía tu solicitud por **WhatsApp al ${NUMERO_MOVIL}**.`;
             mostrarMensaje(mensajeInicial, 'bot-message');
             hablar(mensajeInicial); 
