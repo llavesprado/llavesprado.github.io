@@ -3,327 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat con Gemini</title>
+    <title>Chatbot de Cerrajero (FINAL v23 - Voz Femenina/Latina)</title>
+    
     <style>
+        /* --- ESTILOS CSS --- */
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: #f4f4f9;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
+            min-height: 100vh;
+            margin: 0;
         }
-        #chat-container {
-            flex-grow: 1;
+
+        .chatbot-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            max-width: 400px;
-            width: 90%;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            overflow: hidden;
-            background-color: #fff;
-            position: relative;
-            box-sizing: border-box;
-            max-height: 90vh;
         }
-        #chatOutput {
-            flex-grow: 1;
-            padding: 10px;
-            overflow-y: auto;
-            border-bottom: 4px solid #eee;
-        }
-        #chatOutput p {
-            margin: 8px 0;
-            line-height: 1.5;
-            position: relative;
-            word-wrap: break-word;
-        }
-        #chatOutput p strong {
-            color: #333;
-        }
-        #chatOutput .thinking {
-            color: #888;
-            font-style: italic;
-        }
-        #input-container {
-            display: flex;
-            padding: 8px;
-            border-top: 2px solid #eee;
-            align-items: center;
-        }
-        #userInput {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-right: 8px;
-            font-size: 14px;
-            resize: none;
-        }
-        #sendButton, #voiceButton {
-            padding: 10px 14px;
-            background-color: #007bff;
+
+        header {
+            background-color: #3f51b5;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.40s ease;
-        }
-        #sendButton:hover {
-            background-color: #0056b3;
-        }
-        #voiceButton {
-            background-color: #28a745;
-            margin-left: 8px;
-        }
-        #voiceButton:hover {
-            background-color: #218838;
-        }
-        .cuadro-animado {
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 5px;
-            padding: 4px 4px;
-            background-color: #3498db;
-            border: 3px solid #2980b9;
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
-            transition: all 0.1s ease;
-            cursor: pointer;
-            border-radius: 1px;
+            padding: 15px;
             text-align: center;
         }
-        .cuadro-animado:hover {
-            transform: scale(1.1);
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 1.5em;
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #e1ffc7;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #f0f0f0;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        #userInput {
+            flex-grow = 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .input-container button {
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1em;
+            line-height: 1;
+        }
+
+        .input-container button:hover {
+            background-color: #303f9f;
+        }
+        
+        #micButton {
+            background-color: #e91e63;
+            padding: 10px 12px;
+        }
+        
+        #micButton.listening {
+            background-color: #ff9800;
         }
     </style>
-    <meta name="google-site-verification" content="Y07CzFRTyOVKXp3pfpySdEjCU4i8LgH95O8WwVMH7kQ" />
 </head>
 <body>
-    <div id="chat-container">
-        <div id="chatOutput">
-            <p><strong>ROBOT DE LLAVES BELLO ANTOQUIA:</strong> ¡Hola! Soy tu asistente de IA . La página está en construcción, Democratización de la IA, Bello Antioquia Colombia </p>
-        </div>
-        <div id="input-container">
-            <textarea id="userInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
-            <button id="sendButton">Enviar</button>
-            <button id="voiceButton">🎤</button>
+
+    <div class="chatbot-container">
+        <header>
+            <h1>🔒 Cerrajero Asistente</h1>
+            <p>Pregunta por la disponibilidad del servicio.</p>
+        </header>
+
+        <div class="chat-box" id="chatBox">
+            </div>
+
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Escribe o habla aquí..." autofocus>
+            <div class="action-buttons">
+                <button id="micButton" onclick="iniciarReconocimiento()">🎙️</button>
+                <button onclick="enviarMensaje()">Enviar</button>
+            </div>
         </div>
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatOutput = document.getElementById('chatOutput');
-            const userInput = document.getElementById('userInput');
-            const sendButton = document.getElementById('sendButton');
-            const voiceButton = document.getElementById('voiceButton');
+        // --- LÓGICA DE VOZ (Speech Synthesis) ---
+        const synth = window.speechSynthesis;
+        
+        // Variable global para almacenar las voces disponibles
+        let voices = []; 
+
+        // Función para obtener las voces una vez que el motor de síntesis esté listo
+        function populateVoiceList() {
+          voices = speechSynthesis.getVoices();
+        }
+
+        // Escuchar el evento que indica que el sistema ha cargado las voces
+        if ('speechSynthesis' in window) {
+          populateVoiceList(); 
+          speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+        
+        // FUNCIÓN CENTRAL PARA HABLAR (MODIFICADA PARA VOZ DE MUJER Y ACENTO LATINO/NEUTRAL)
+        const hablar = (texto) => {
+            if (!('speechSynthesis' in window)) {
+                console.error("Tu navegador no soporta la síntesis de voz.");
+                return;
+            }
             
-            const GEMINI_API_KEY = 'AIzaSyDzG9QTexK4Vgb9EmdtwkBdEeUgFN33ZyM';
-
-            const precios = {
-                'tornillo': '45.000',
-                'soldadura': '60.000',
-                'llave_sencilla': '3.000',
-                'llave_color': '3.500',
-                'duplicado_casa': '3.000'
-            };
-
-            sendButton.addEventListener('click', sendMessage);
-            userInput.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    sendMessage();
-                }
-            });
-
-            async function sendMessage() {
-                const message = userInput.value.trim();
-                if (message === '') return;
-                
-                addMessage('Tú', message);
-                userInput.value = '';
-
-                const thinkingMessage = addMessage('ROBOT', 'Escribiendo...', 'thinking');
-                
-                const respuestaRobot = await getRobotResponse(message);
-                
-                thinkingMessage.innerHTML = `<strong>ROBOT:</strong> ${respuestaRobot}`;
-                thinkingMessage.classList.remove('thinking');
-                
-                startBlinking(thinkingMessage);
-                speakText(respuestaRobot); // Aquí se llama a la función para leer la respuesta final
+            // ELIMINAR ASTERISCOS (**) ANTES DE HABLAR
+            const textoLimpio = texto.replace(/\*\*/g, '');
+            
+            const utterance = new SpeechSynthesisUtterance(textoLimpio);
+            
+            // --- LÓGICA DE SELECCIÓN DE VOZ REFORZADA ---
+            let selectedVoice = null;
+            
+            // 1. Intentar seleccionar una voz conocida de Google que suene neutral/latina
+            selectedVoice = voices.find(voice => 
+                voice.lang.startsWith('es') && (
+                voice.name.includes('Google español (Estados Unidos)') || 
+                voice.name.includes('Google español de México') || 
+                (voice.name.includes('Google') && (voice.name.includes('Female') || voice.name.includes('Mujer') || !voice.name.includes('Male')) )
+                )
+            );
+            
+            // 2. Si no la encuentra, intentar una voz genérica de mujer
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.startsWith('es') && 
+                    (voice.name.includes('Female') || voice.name.includes('Mujer') || voice.name.includes('Isabel') || voice.name.includes('Lucia'))
+                );
             }
-
-            async function getRobotResponse(mensajeUsuario) {
-                const mensajeNormalizado = mensajeUsuario.toLowerCase().trim();
-                let respuesta = '';
-
-                if (mensajeNormalizado.includes('soldadura') && (mensajeNormalizado.includes('cuesta') || mensajeNormalizado.includes('vale'))) {
-                    respuesta = 'El cambio de clave para una chapa con soldadura vale ' + precios.soldadura + '.';
-                } else if (mensajeNormalizado.includes('tornillo') && (mensajeNormalizado.includes('cuesta') || mensajeNormalizado.includes('vale'))) {
-                    respuesta = 'El cambio de clave para una chapa con tornillos tiene un valor de ' + precios.tornillo + '.';
-                } else if (mensajeNormalizado.includes('chapa') || mensajeNormalizado.includes('cambio de clave')) {
-                    respuesta = '¿Está fijada con tornillo o con soldadura?';
-                } else if (mensajeNormalizado.includes('llave')) {
-                    if (mensajeNormalizado.includes('a color') || mensajeNormalizado.includes('con imagen')) {
-                        respuesta = 'Llave a color, ' + precios.llave_color + '.';
-                    } else if (mensajeNormalizado.includes('sencilla') || mensajeNormalizado.includes('de casa') || mensajeNormalizado.includes('sin color')) {
-                        respuesta = 'Llave sencilla, ' + precios.llave_sencilla + '.';
-                    } else {
-                        respuesta = 'Depende del tipo de llave.';
-                    }
-                } else if (mensajeNormalizado.includes('duplicado')) {
-                    if (mensajeNormalizado.includes('llave')) {
-                        respuesta = 'El duplicado de una llave cuesta ' + precios.llave_sencilla + '.';
-                    } else if (mensajeNormalizado.includes('casa')) {
-                        respuesta = 'El duplicado de escrituras de casa tiene un valor de ' + precios.duplicado_casa + '.';
-                    } else {
-                        respuesta = 'Por favor, dime si es un duplicado de llave o de casa.';
-                    }
-                } else if (mensajeNormalizado.includes('quién es alexander') || mensajeNormalizado.includes('quien es alexander amaya') || mensajeNormalizado.includes('quien es alexander amaya atehortua') || mensajeNormalizado.includes('quien es alex') || mensajeNormalizado.includes('quién es alex')) {
-                    respuesta = 'Alexander Amaya Atehortua es el creador de mi funcionamiento, es el programador y desarrollador de esta inteligencia artificial.';
-                } else if (mensajeNormalizado.includes('quién eres') || mensajeNormalizado.includes('quien eres tu') || mensajeNormalizado.includes('eres un robot') || mensajeNormalizado.includes('quién es usted') || mensajeNormalizado.includes('quien eres') || mensajeNormalizado.includes('quien es usted')) {
-                    respuesta = 'Mi nombre es Orión, soy un robot de inteligencia artificial programado por Alexander Amaya Atehortua, para ayudarte con tus necesidades de cerrajería y reparaciones.';
-                } else if (mensajeNormalizado.includes('hola') || mensajeNormalizado.includes('saludo') || mensajeNormalizado.includes('qué tal')) {
-                    respuesta = "Hola, soy Orión! ¿en qué puedo ayudarte?";
-                } else if (mensajeNormalizado.includes('de dónde eres') || mensajeNormalizado.includes('de donde eres') || mensajeNormalizado.includes('donde vives') || mensajeNormalizado.includes('donde estas')) {
-                    respuesta = 'De Colombia, Medellin Bello Antioquia el Meza';
-                } else {
-                    try {
-                        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                contents: [{
-                                    parts: [{
-                                        text: mensajeUsuario
-                                    }]
-                                }]
-                            }),
-                        });
-
-                        const data = await response.json();
-                        if (data.candidates && data.candidates.length > 0) {
-                            respuesta = data.candidates[0].content.parts[0].text;
-                        } else {
-                            respuesta = 'Dentro de muy poco, lo que me quieran preguntar, tendré respuestas definidas, por el momento, estoy aprendiendo de los humanos.';
-                        }
-                    } catch (error) {
-                        console.error('Error al llamar a la API de Gemini:', error);
-                        respuesta = 'Hubo un problema al conectar con el servidor. ¿Puedes intentarlo de nuevo?';
-                    }
-                }
-                return respuesta;
+            
+            // 3. Aplicar la voz o la configuración de idioma de respaldo
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                utterance.lang = selectedVoice.lang; 
+            } else {
+                // Opción final de respaldo: Forzar el acento Español de EE. UU. (más neutral que el de España)
+                utterance.lang = 'es-US'; 
             }
+            // ------------------------------------
+            
+            // Configuración de velocidad y tono
+            utterance.rate = 1.0; 
+            utterance.pitch = 1.0; 
+            
+            synth.speak(utterance);
+        };
+        
+        // --- LÓGICA DE ESCUCHA (Speech Recognition) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+        const micButton = document.getElementById('micButton');
 
-            function addMessage(sender, text, className = '') {
-                const p = document.createElement('p');
-                p.innerHTML = `<strong>${sender}:</strong> ${text}`;
-                if (className) {
-                    p.classList.add(className);
-                }
-                chatOutput.appendChild(p);
-                chatOutput.scrollTop = chatOutput.scrollHeight;
-                return p;
-            }
-
-            function speakText(text) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-ES';
-                window.speechSynthesis.speak(utterance);
-            }
-
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
             recognition.lang = 'es-ES';
+            recognition.interimResults = false;
 
-            voiceButton.addEventListener('click', function() {
-                recognition.start();
-                voiceButton.textContent = 'Pensando..';
-            });
+            recognition.onstart = () => {
+                isListening = true;
+                micButton.classList.add('listening');
+                micButton.textContent = '🔴';
+                document.getElementById('userInput').placeholder = "Escuchando...";
+            };
 
-            recognition.onresult = function(event) {
+            recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                voiceButton.textContent = '🎤';
-                sendMessage();
+                document.getElementById('userInput').value = transcript;
+                enviarMensaje();
+                
+                isListening = false;
+                micButton.classList.remove('listening');
+                micButton.textContent = '🎙️';
+                document.getElementById('userInput').placeholder = "Escribe o habla aquí...";
             };
 
-            recognition.onerror = function(event) {
+            recognition.onend = () => {
+                if (isListening) {
+                    isListening = false;
+                    micButton.classList.remove('listening');
+                    micButton.textContent = '🎙️';
+                    document.getElementById('userInput').placeholder = "Escribe o habla aquí...";
+                }
+            };
+
+            recognition.onerror = (event) => {
                 console.error('Error de reconocimiento de voz:', event.error);
-                voiceButton.textContent = '🎤';
+                isListening = false;
+                micButton.classList.remove('listening');
+                micButton.textContent = '🎙️';
+                document.getElementById('userInput').placeholder = "Escribe o habla aquí...";
             };
+        } else {
+            micButton.style.display = 'none';
+        }
 
-            const colores = ['#3498db', '#e74c3c', '#27ae60', '#f1c40f', '#9b59b6', '#1abc9c'];
-            let indiceColorActual = 0;
-            let blinkInterval;
-            const normalBlinkSpeed = 290;
-            const fastBlinkSpeed = 40;
-            let isVisible = true;
-            let cuadro;
+        function iniciarReconocimiento() {
+            if (recognition) {
+                // Cancela cualquier voz antes de iniciar la escucha o detenerla
+                window.speechSynthesis.cancel(); 
 
-            function toggleVisibilityAndColor() {
-                isVisible = !isVisible;
-                if (cuadro) {
-                    cuadro.style.opacity = isVisible ? '1' : '0';
-                    indiceColorActual = (indiceColorActual + 1) % colores.length;
-                    cuadro.style.backgroundColor = colores[indiceColorActual];
-                    cuadro.style.borderColor = colores[indiceColorActual];
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            } else {
+                 alert("Tu navegador no soporta la función de dictado por voz. Por favor, usa Google Chrome.");
+            }
+        }
+        
+        
+        // --- LÓGICA JAVASCRIPT PRINCIPAL ---
+
+        // DATOS DE CONTACTO
+        const NUMERO_MOVIL = "304 465 4556";
+        const NUMERO_FIJO = "604 598 1532";
+
+        // FUNCIÓN CLAVE PARA LA NORMALIZACIÓN (IGNORAR TILDES)
+        const quitarTildes = (texto) => {
+            return texto
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, "");
+        };
+
+        // Normaliza a minúsculas y elimina tildes
+        const normalizarParaComparar = (str) => {
+            return quitarTildes(str).toLowerCase().trim();
+        };
+
+
+        // --- BASE DE CONOCIMIENTO Y RESPUESTAS ---
+        const palabrasClaveSaludos = ["hola", "buenos dias", "buenas tardes", "buenas noches", "saludo"];
+        const palabrasClaveEstado = ["como esta", "como va", "que tal"];
+        const palabrasClaveContacto = ["numero", "telefono", "whatsapp", "contacto", "llamar", "cual es", "urgente", "comunique", "tecnico"]; 
+        const palabrasClaveTiempo = ["cuando", "cuanto", "termina", "demora", "tiempo"];
+        
+        // Palabras clave para precios/costos GENÉRICOS (Baja prioridad)
+        const palabrasClavePrecios = ["precio", "costo", "tarifa", "cuanto vale", "cuánto cuesta", "abre chapa"]; 
+        
+        // Palabras clave para apertura de puerta (Hogar) - ALTA PRIORIDAD
+        const palabrasClaveAperturaHogar = ["abrir puerta", "abrir la puerta", "necesito abrir", "me quede por fuera", "apertura", "de apertura", "puerta de casa"];
+        
+        // Palabras clave para apertura de carro (Vehículo) - MÁXIMA PRIORIDAD
+        const palabrasClaveAperturaCarro = ["abrir carro", "abrir el carro", "abrir vehiculo", "llaves carro", "puerta carro", "me quede por fuera carro", "carro"];
+        
+        // Palabras clave para Cambio de Clave / Soldadura (Prioridad Media)
+        const palabrasClaveCambioClave = ["cambio de clave", "clave", "soldadura", "cambiar clave", "chapa"];
+        
+        const palabrasClaveServicio = ["abrir", "puerta", "llave", "necesito", "tarabajo", "cerrajeria", "arreglar"];
+        const palabrasClaveDisponibilidad = ["disponible", "horario", "ahora", "inmediato", "puede", "señor", "estará"];
+
+        const respuestaSaludo = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
+        const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
+        
+        // RESPUESTA DE CONTACTO URGENTE
+        const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**`;
+
+        // RESPUESTA DE APERTURA DE CARRO
+        const respuestaAperturaCarro = `La apertura de carro vale **70.000 COP** con domicilio. Si su carro es un modelo más optimizado (nuevo o con seguridad especial), es mejor enviar una foto o comunicarse directamente con el técnico vía **WhatsApp al ${NUMERO_MOVIL}**.`;
+
+        // RESPUESTA DE APERTURA DE PUERTA (Hogar)
+        const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
+
+        // RESPUESTA DE PRECIOS SIMPLES (Cambio de clave)
+        const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
+        
+        // *RESPUESTA DETALLADA DE SOLDADURA*
+        const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP**.`;
+
+        // RESPUESTA DE OCUPADO PROACTIVO (General)
+        const respuestaOcupadoProactivo = `Sí, ofrecemos el servicio de cerrajería. Actualmente, estoy finalizando un trabajo, pero si me dejas tu solicitud por **WhatsApp (${NUMERO_MOVIL})**, te aseguro que **te devuelvo la llamada inmediatamente** apenas termine (en pocos minutos). Así agilizamos tu servicio.`;
+
+        const respuestaTiempo = `El trabajo actual está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
+        
+        const respuestaDefault = "Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre el servicio o la disponibilidad.";
+
+
+        // --- LÓGICA CENTRAL DEL CHATBOT ---
+
+        function enviarMensaje() {
+            const userInput = document.getElementById('userInput');
+            const userText = userInput.value;
+            
+            if (!userText.trim()) return;
+            
+            // Cancela cualquier voz cuando el usuario envía un mensaje (escribe o dicta)
+            window.speechSynthesis.cancel(); 
+
+            mostrarMensaje(userText, 'user-message');
+
+            setTimeout(() => {
+                const botResponse = obtenerRespuesta(userText);
+                mostrarMensaje(botResponse, 'bot-message');
+                hablar(botResponse); // EL CHATBOT HABLA LA RESPUESTA
+            }, 500);
+
+            userInput.value = '';
+        }
+
+
+        function obtenerRespuesta(userText) {
+            const textoNormalizado = normalizarParaComparar(userText);
+            const textoSinEspacios = normalizarParaComparar(userText.replace(/\s/g, '')); 
+
+
+            // 1. PRIORIDAD: SALUDOS
+            for (const clave of palabrasClaveSaludos) {
+                if (textoNormalizado.includes(clave) || textoSinEspacios.includes(clave.replace(/\s/g, '').replace(' ', ''))) {
+                    return respuestaSaludo; 
+                }
+            }
+            
+            // 2. PRIORIDAD: ESTADO/ÁNIMO
+            for (const clave of palabrasClaveEstado) {
+                if (textoNormalizado.includes(clave)) {
+                    return respuestaEstado; 
                 }
             }
 
-            function startBlinking(element) {
-                const oldCuadro = document.querySelector('.cuadro-animado');
-                if (oldCuadro) {
-                    oldCuadro.remove();
+            // 3. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA (Respuesta directa a llamar)
+            for (const clave of palabrasClaveContacto) {
+                if (textoNormalizado.includes(clave)) {
+                    return respuestaContacto; 
                 }
-
-                cuadro = document.createElement('div');
-                cuadro.className = 'cuadro-animado';
-
-                element.appendChild(cuadro);
-
-                clearInterval(blinkInterval);
-                blinkInterval = setInterval(toggleVisibilityAndColor, normalBlinkSpeed);
+            }
+            
+            // 4. MÁXIMA PRIORIDAD: APERTURA DE CARRO
+            for (const clave of palabrasClaveAperturaCarro) {
+                if (textoNormalizado.includes(clave)) {
+                    return respuestaAperturaCarro; 
+                }
+            }
+            
+            // 5. ALTA PRIORIDAD: APERTURA DE PUERTA (Hogar/Alcoba)
+            for (const clave of palabrasClaveAperturaHogar) {
+                if (textoNormalizado.includes(clave)) {
+                    return respuestaAperturaPuerta; 
+                }
+            }
+            
+            // 6. PRIORIDAD MEDIA: PROCESO DE SOLDADURA (Detalle)
+            if (textoNormalizado.includes("soldadura") && (textoNormalizado.includes("cambio de clave") || textoNormalizado.includes("como es") || textoNormalizado.includes("proceso"))) {
+                return respuestaSoldaduraDetallada; 
+            }
+            
+            // 7. PRIORIDAD MEDIA: CAMBIO DE CLAVE / PRECIOS ESPECÍFICOS
+            let esPreguntaDeCambioClave = false;
+            for (const clave of palabrasClaveCambioClave) {
+                if (textoNormalizado.includes(clave)) {
+                    esPreguntaDeCambioClave = true; 
+                    break;
+                }
+            }
+            
+            if (esPreguntaDeCambioClave) {
+                return respuestaPrecios; 
+            }
+            
+            // 8. PRIORIDAD BAJA: PRECIOS/COSTOS (Genéricos que pueden referirse a cualquier cosa)
+            let esPreguntaDePrecioGenerico = false;
+            for (const clave of palabrasClavePrecios) {
+                if (textoNormalizado.includes(clave)) {
+                    esPreguntaDePrecioGenerico = true; 
+                    break;
+                }
+            }
+            
+            if (esPreguntaDePrecioGenerico) {
+                return respuestaPrecios; 
             }
 
-            let typingTimeout;
-            userInput.addEventListener('input', function() {
-                if (cuadro) {
-                    clearInterval(blinkInterval);
-                    blinkInterval = setInterval(toggleVisibilityAndColor, fastBlinkSpeed);
-                    clearTimeout(typingTimeout);
-                    typingTimeout = setTimeout(() => {
-                        clearInterval(blinkInterval);
-                        blinkInterval = setInterval(toggleVisibilityAndColor, normalBlinkSpeed);
-                    }, 500);
-                }
-            });
-            userInput.addEventListener('blur', function() {
-                clearTimeout(typingTimeout);
-                if (cuadro) {
-                    clearInterval(blinkInterval);
-                    blinkInterval = setInterval(toggleVisibilityAndColor, normalBlinkSpeed);
-                }
-            });
 
-            window.addEventListener('resize', () => {
-                const lastRobotMessage = chatOutput.lastElementChild;
-                if (lastRobotMessage && lastRobotMessage.querySelector('.cuadro-animado')) {
-                    const existingCuadro = lastRobotMessage.querySelector('.cuadro-animado');
-                    existingCuadro.style.left = '';
-                    existingCuadro.style.bottom = '';
-                    existingCuadro.style.top = '';
+            // 9. PRIORIDAD: TIEMPO/DURACIÓN (Arregla "Cuánto termina" y similares)
+            for (const clave of palabrasClaveTiempo) {
+                if (textoNormalizado.includes(clave) || textoNormalizado.includes("termina") || textoNormalizado.includes("desocupa")) {
+                    return respuestaTiempo; 
                 }
-            });
+            }
+
+            // 10. PRIORIDAD: DISPONIBILIDAD O SOLICITUD DE SERVICIO (Respuesta General)
+            let preguntaPorDisponibilidad = false;
+            let esSolicitudServicio = false;
+
+            for (const clave of palabrasClaveDisponibilidad) {
+                if (textoNormalizado.includes(clave)) {
+                    preguntaPorDisponibilidad = true;
+                    break;
+                }
+            }
+            for (const clave of palabrasClaveServicio) {
+                if (textoNormalizado.includes(clave)) {
+                    esSolicitudServicio = true;
+                    break;
+                }
+            }
+            
+            if (preguntaPorDisponibilidad || esSolicitudServicio) {
+                return respuestaOcupadoProactivo; 
+            }
+
+            // 11. RESPUESTA POR DEFECTO
+            return respuestaDefault;
+        }
+
+
+        // FUNCIONES DE INTERFAZ DE USUARIO (UI)
+        function mostrarMensaje(mensaje, tipo) {
+            const chatBox = document.getElementById('chatBox');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', tipo);
+            messageElement.innerHTML = mensaje; 
+            chatBox.appendChild(messageElement);
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Permite enviar mensaje al presionar Enter
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                enviarMensaje();
+            }
         });
+
+        // Mensaje de bienvenida inicial
+        window.onload = () => {
+            const mensajeInicial = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
+            mostrarMensaje(mensajeInicial, 'bot-message');
+            hablar(mensajeInicial);
+        }
     </script>
 </body>
 </html>
