@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Cerrajería Chatbot Inteligencia Artificial | Servicio Urgente WhatsApp 304 465 4556</title>
-    
-    <meta name="description" content="Cerrajería Chatbot Inteligencia Artificial (IA) a domicilio. Solicita servicio urgente de apertura de puertas, carros y cambio de clave por WhatsApp al 304 465 4556.">
+    <title>Chatbot de Cerrajero (FINAL v25 - Optimizado para Hosting)</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-PYYYEKQYGJ"></script>
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-BTNX589XJM"></script>
@@ -53,7 +50,6 @@
         h1 {
             margin: 0 0 5px 0;
             font-size: 1.5em;
-            /* 🔑 OPTIMIZACIÓN SEO: El <h1> debe ser relevante */
         }
 
         p {
@@ -143,8 +139,8 @@
 
     <div class="chatbot-container">
         <header>
-            <h1>🔒 Cerrajería Chatbot Inteligencia Artificial</h1>
-            <p>Servicios a **Domicilio** (Apertura, Cambio de Clave). ¡Consulta por **WhatsApp 304 465 4556**!</p>
+            <h1>🔒 Cerrajero Asistente</h1>
+            <p>Servicios a **Domicilio** (Apertura, Cambio de Clave). ¡Consulta por **WhatsApp**!</p>
         </header>
 
         <div class="chat-box" id="chatBox">
@@ -332,7 +328,7 @@
         
         // RESPUESTAS DE IDENTIDAD ACTUALIZADAS:
         const respuestaIdentidad = "Soy una inteligencia artificial trabajando en una ley de datos.";
-        // Respuesta del creador con el nombre y descripción solicitados
+        // ** MODIFICACIÓN SOLICITADA AQUÍ **
         const respuestaCreador = "Fui creado por Alexander Amaya Atehortua, experto de la IA, software y hardware. ¿En qué servicio de cerrajería puedo ayudarte?"; 
         
         const respuestaOrigen = "Bello Antioquia, Medellín Colombia."; 
@@ -342,4 +338,230 @@
         const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
         const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP** (Setenta mil pesos colombianos).`;
         const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`;
-        const respuestaTiempo = `El trabajo actual está casi finalizado. Por favor, deja tu mensaje por
+        const respuestaTiempo = `El trabajo actual está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
+        const respuestaHipHopGeneral = "¡El Hip Hop es la voz de la calle y una cultura poderosa! Se basa en cuatro elementos principales: **MCing (rap), DJing, Graffiti y Breakdance**. ¿Quieres saber sobre un artista o un elemento en específico?";
+        const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
+        const respuestaDefault = `Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre tu problema de **cerrajería a domicilio** (apertura/cambio de clave) y comunícate por **WhatsApp (${NUMERO_MOVIL})** para una respuesta más rápida.`;
+
+
+        // --- LÓGICA CENTRAL DEL CHATBOT ---
+
+        function enviarMensaje() {
+            const userInput = document.getElementById('userInput');
+            const userText = userInput.value;
+            
+            if (!userText.trim()) return;
+            
+            if (speechEnabled) window.speechSynthesis.cancel(); 
+
+            mostrarMensaje(userText, 'user-message');
+            
+            // >> EVENTO GA4: Mensaje enviado
+            if (typeof gtag === 'function') {
+                gtag('event', 'chat_message_sent', {
+                    'message_length': userText.length,
+                    'user_input_preview': userText.substring(0, 50)
+                });
+            }
+
+            setTimeout(() => {
+                const botResponse = obtenerRespuesta(userText);
+                mostrarMensaje(botResponse, 'bot-message');
+                hablar(botResponse); 
+            }, 500);
+
+            userInput.value = '';
+        }
+
+        // FUNCIÓN CENTRAL CON EVENTOS GA4 INTEGRADOS
+        function obtenerRespuesta(userText) {
+            const textoNormalizado = normalizarParaComparar(userText);
+            const textoSinEspacios = normalizarParaComparar(userText.replace(/\s/g, '').replace(' ', '')); 
+
+            // Función de ayuda para enviar el evento a GA4
+            const enviarIntencion = (nombre) => {
+                if (typeof gtag === 'function') {
+                    gtag('event', 'chatbot_intent', {'intent_name': nombre});
+                }
+            };
+
+
+            // 1. PRIORIDAD: SALUDOS / ESTADO
+            for (const clave of palabrasClaveSaludos) {
+                if (textoNormalizado.includes(clave) || textoSinEspacios.includes(clave.replace(/\s/g, ''))) {
+                    enviarIntencion('saludo'); 
+                    return respuestaSaludo; 
+                }
+            }
+            for (const clave of palabrasClaveEstado) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('estado');
+                    return respuestaEstado; 
+                }
+            }
+            
+            // 1.6 PRIORIDAD: ORIGEN ESPECÍFICO 
+            for (const clave of palabrasClaveOrigen) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('origen_bot'); 
+                    return respuestaOrigen; 
+                }
+            }
+            
+            // 2. PRIORIDAD: IDENTIDAD (Lógica para separar creador de identidad general)
+            // A) PREGUNTA POR EL CREADOR
+            for (const clave of palabrasClaveCreador) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('creador_bot'); 
+                    return respuestaCreador; 
+                }
+            }
+            
+            // B) PREGUNTA GENERAL DE IDENTIDAD
+            for (const clave of palabrasClaveIdentidad) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('identidad_bot'); 
+                    return respuestaIdentidad; 
+                }
+            }
+
+            // 3. PRIORIDAD: HIP HOP (Redirige)
+            let esPreguntaDeHipHop = false;
+            for (const clave of palabrasClaveHipHop) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('interes_hiphop_general');
+                    return respuestaHipHopGeneral; 
+                }
+            }
+            for (const clave of palabrasClaveArtistasHipHop) {
+                if (textoNormalizado.includes(clave)) {
+                    esPreguntaDeHipHop = true; 
+                    break;
+                }
+            }
+            if (esPreguntaDeHipHop) {
+                enviarIntencion('interes_hiphop_artista');
+                return respuestaHipHopArtista;
+            }
+
+
+            // 4. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA (¡El evento más importante!)
+            for (const clave of palabrasClaveContacto) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('contacto_urgente'); 
+                    return respuestaContacto; 
+                }
+            }
+            
+            // 5. MÁXIMA PRIORIDAD: APERTURA DE CARRO
+            for (const clave of palabrasClaveAperturaCarro) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('apertura_carro'); 
+                    return respuestaAperturaCarro; 
+                }
+            }
+            
+            // 6. ALTA PRIORIDAD: APERTURA DE PUERTA (Hogar/Alcoba)
+            for (const clave of palabrasClaveAperturaHogar) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('apertura_hogar'); 
+                    return respuestaAperturaPuerta; 
+                }
+            }
+            
+            // 7. PRIORIDAD MEDIA: PROCESO DE SOLDADURA (Detalle)
+            if (textoNormalizado.includes("soldadura") && (textoNormalizado.includes("cambio de clave") || textoNormalizado.includes("como es") || textoNormalizado.includes("proceso"))) {
+                 enviarIntencion('precio_o_cambio_clave'); 
+                return respuestaSoldaduraDetallada; 
+            }
+            
+            // 8. & 9. PRIORIDAD MEDIA: CAMBIO DE CLAVE / PRECIOS ESPECÍFICOS/GENÉRICOS
+            let esPreguntaDeCambioClave = false;
+            for (const clave of palabrasClaveCambioClave) {
+                if (textoNormalizado.includes(clave)) {
+                    esPreguntaDeCambioClave = true; 
+                    break;
+                }
+            }
+            let esPreguntaDePrecioGenerico = false;
+            for (const clave of palabrasClavePrecios) {
+                if (textoNormalizado.includes(clave)) {
+                    esPreguntaDePrecioGenerico = true; 
+                    break;
+                }
+            }
+            if (esPreguntaDeCambioClave || esPreguntaDePrecioGenerico) {
+                enviarIntencion('precio_o_cambio_clave'); 
+                return respuestaPrecios; 
+            }
+
+            // 10. PRIORIDAD: TIEMPO/DURACIÓN 
+            for (const clave of palabrasClaveTiempo) {
+                if (textoNormalizado.includes(clave) || textoNormalizado.includes("termina") || textoNormalizado.includes("desocupa")) {
+                    enviarIntencion('pregunta_tiempo'); 
+                    return respuestaTiempo; 
+                }
+            }
+
+            // 11. PRIORIDAD: DISPONIBILIDAD O SOLICITUD DE SERVICIO (Respuesta General)
+            let preguntaPorDisponibilidad = false;
+            let esSolicitudServicio = false;
+            for (const clave of palabrasClaveDisponibilidad) {
+                if (textoNormalizado.includes(clave)) {
+                    preguntaPorDisponibilidad = true;
+                    break;
+                }
+            }
+            for (const clave of palabrasClaveServicio) {
+                if (textoNormalizado.includes(clave)) {
+                    esSolicitudServicio = true;
+                    break;
+                }
+            }
+            
+            if (preguntaPorDisponibilidad || esSolicitudServicio) {
+                enviarIntencion('disponibilidad_o_servicio_general');
+                return respuestaOcupadoProactivo; 
+            }
+
+            // 12. RESPUESTA POR DEFECTO
+            enviarIntencion('desconocido'); 
+            return respuestaDefault;
+        }
+
+
+        // FUNCIONES DE INTERFAZ DE USUARIO (UI)
+        function mostrarMensaje(mensaje, tipo) {
+            const chatBox = document.getElementById('chatBox');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', tipo);
+            messageElement.innerHTML = mensaje; 
+            chatBox.appendChild(messageElement);
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Permite enviar mensaje al presionar Enter
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                enviarMensaje();
+            }
+        });
+
+        // Mensaje de bienvenida inicial y chequeo de compatibilidad
+        window.onload = () => {
+            if (!recognitionEnabled) {
+                 console.warn("Reconocimiento de voz (micrófono) deshabilitado por el navegador o el entorno (ej: GitHub sin HTTPS).");
+            } 
+            
+            if (!speechEnabled) {
+                 console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
+            }
+            
+            const mensajeInicial = `¡Hola! Somos cerrajería a domicilio. Para un servicio rápido, envía tu solicitud por **WhatsApp al ${NUMERO_MOVIL}**.`;
+            mostrarMensaje(mensajeInicial, 'bot-message');
+            hablar(mensajeInicial); 
+        }
+    </script>
+</body>
+</html>
