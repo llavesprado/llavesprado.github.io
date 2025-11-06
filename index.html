@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot de Cerrajero (FINAL v27 - Texto Deslizante)</title>
+    <title>Chatbot de Cerrajero (FINAL v30 - Máxima Prioridad Chatbot)</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-PYYYEKQYGJ"></script>
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-BTNX589XJM"></script>
@@ -399,6 +399,15 @@
         const palabrasClaveDisponibilidad = ["disponible", "horario", "ahora", "inmediato", "puede", "señor", "estará"];
         const palabrasClaveHipHop = ["hip hop", "rap", "cultura hip hop", "dj", "graffiti", "breakdance", "mc", "rapero", "ritmo", "flow"];
         const palabrasClaveArtistasHipHop = ["snoop dogg", "eminem", "shakira", "sza", "jay z", "nas", "notorious", "tupac", "calle 13", "vico c"];
+        
+        // CLAVES Y RESPUESTA PARA VENTA DE CHATBOTS (Aumentada la prioridad)
+        const palabrasClaveVentaChatbot = [
+            "ventas chatbot", "como vender chatbot", "crear chatbot", "negocio chatbot", "quiero un chatbot", 
+            "como hago chatbot", "vender por redes", "servicio chatbot", "vender chatbot", "bot con ia", 
+            "chatbot inteligencia artificial", "informacion sobre chatbot", "bot", "negocio", "informacion" // <-- Claves ampliadas
+        ];
+        const respuestaVentaChatbot = "Claro, aquí creamos los chatbots para tu negocio. Depende lo que quieras que diga. En respuesta le preguntarán acerca de tu negocio, chatbot con Inteligencia artificial en tiempo real.";
+        // FIN CLAVES CHATBOT
 
         // DATOS Y CLAVES AÑADIDOS PARA 'LLAVES DE LA CASA' - UBICACIÓN ACTUALIZADA
         const UBICACION_LLAVES_CASA = "Carrera 51 #55-57, cerca de donde estaba la antigua Plaza de Bello";
@@ -419,8 +428,8 @@
         const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
         const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
         const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP** (Setenta mil pesos colombianos).`;
-        const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`;
-        const respuestaTiempo = `El trabajo actual está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
+        const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio de cerrajería a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`; // Ligeramente ajustado
+        const respuestaTiempo = `El trabajo actual de cerrajería está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
         const respuestaHipHopGeneral = "¡El Hip Hop es la voz de la calle y una cultura poderosa! Se basa en cuatro elementos principales: **MCing (rap), DJing, Graffiti y Breakdance**. ¿Quieres saber sobre un artista o un elemento en específico?";
         const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
         const respuestaDefault = `Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre tu problema de **cerrajería a domicilio** (apertura/cambio de clave) y comunícate por **WhatsApp (${NUMERO_MOVIL})** para una respuesta más rápida.`;
@@ -494,6 +503,14 @@
                 if (textoNormalizado.includes(clave)) {
                     enviarIntencion('estado');
                     return respuestaEstado; 
+                }
+            }
+
+            // 1.1. ALTA PRIORIDAD: VENTA/CREACIÓN DE CHATBOTS (¡MOVÍ ESTA LÓGICA AQUÍ!)
+            for (const clave of palabrasClaveVentaChatbot) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('interes_venta_chatbot'); 
+                    return respuestaVentaChatbot; 
                 }
             }
             
@@ -600,7 +617,7 @@
                 }
             }
 
-            // 11. PRIORIDAD: DISPONIBILIDAD O SOLICITUD DE SERVICIO (Respuesta General)
+            // 11. PRIORIDAD BAJA: DISPONIBILIDAD O SOLICITUD DE SERVICIO (Respuesta General de Cerrajería - solo si no ha activado nada de lo anterior)
             let preguntaPorDisponibilidad = false;
             let esSolicitudServicio = false;
             for (const clave of palabrasClaveDisponibilidad) {
@@ -620,7 +637,7 @@
                 enviarIntencion('disponibilidad_o_servicio_general');
                 return respuestaOcupadoProactivo; 
             }
-
+            
             // 12. RESPUESTA POR DEFECTO
             enviarIntencion('desconocido'); 
             return respuestaDefault;
