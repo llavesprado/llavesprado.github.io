@@ -1,12 +1,5 @@
-
-
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta 
-
-<!DOCTYPE html> 
-<html lang="es"> 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,7 +79,7 @@
         }
 
         #userInput {
-            flex-grow = 1;
+            flex-grow: 1; /* Corregí el error de sintaxis aquí (quitando el '= 1') */
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 20px;
@@ -122,6 +115,12 @@
         #micButton.listening {
             background-color: #ff9800;
         }
+        
+        /* Nuevo estilo para botones desactivados */
+        #micButton:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -150,6 +149,7 @@
         
         // Variable global para almacenar las voces disponibles
         let voices = []; 
+        let speechEnabled = ('speechSynthesis' in window); // Bandera de control
 
         // Función para obtener las voces una vez que el motor de síntesis esté listo
         function populateVoiceList() {
@@ -157,15 +157,16 @@
         }
 
         // Escuchar el evento que indica que el sistema ha cargado las voces
-        if ('speechSynthesis' in window) {
+        if (speechEnabled) {
           populateVoiceList(); 
           speechSynthesis.onvoiceschanged = populateVoiceList;
         }
         
-        // FUNCIÓN CENTRAL PARA HABLAR (MODIFICADA PARA VOZ DE MUJER Y ACENTO LATINO/NEUTRAL)
+        // FUNCIÓN CENTRAL PARA HABLAR
         const hablar = (texto) => {
-            if (!('speechSynthesis' in window)) {
-                console.error("Tu navegador no soporta la síntesis de voz.");
+            // Solo intenta hablar si la función de voz está disponible
+            if (!speechEnabled) {
+                console.log("Síntesis de voz deshabilitada o no soportada.");
                 return;
             }
             
@@ -216,12 +217,14 @@
         let recognition = null;
         let isListening = false;
         const micButton = document.getElementById('micButton');
+        let recognitionEnabled = false; // Bandera para control del micrófono
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.lang = 'es-ES';
             recognition.interimResults = false;
+            recognitionEnabled = true; // El navegador soporta la función
 
             recognition.onstart = () => {
                 isListening = true;
@@ -258,11 +261,13 @@
                 document.getElementById('userInput').placeholder = "Escribe o habla aquí...";
             };
         } else {
-            micButton.style.display = 'none';
+            // Si el navegador no soporta el reconocimiento, desactivamos el botón
+            micButton.style.display = 'none'; 
+            micButton.disabled = true; // Agregado para robustez
         }
 
         function iniciarReconocimiento() {
-            if (recognition) {
+            if (recognition && recognitionEnabled) {
                 // Cancela cualquier voz antes de iniciar la escucha o detenerla
                 window.speechSynthesis.cancel(); 
 
@@ -272,7 +277,7 @@
                     recognition.start();
                 }
             } else {
-                 alert("Tu navegador no soporta la función de dictado por voz. Por favor, usa Google Chrome.");
+                 alert("La función de dictado por voz no está disponible en este entorno o navegador.");
             }
         }
         
@@ -297,49 +302,37 @@
 
 
         // --- BASE DE CONOCIMIENTO Y RESPUESTAS ---
+        // CLAVES DE CERRRAJERÍA
         const palabrasClaveSaludos = ["hola", "buenos dias", "buenas tardes", "buenas noches", "saludo"];
         const palabrasClaveEstado = ["como esta", "como va", "que tal"];
         const palabrasClaveContacto = ["numero", "telefono", "whatsapp", "contacto", "llamar", "cual es", "urgente", "comunique", "tecnico"]; 
         const palabrasClaveTiempo = ["cuando", "cuanto", "termina", "demora", "tiempo"];
-        
-        // Palabras clave para precios/costos GENÉRICOS (Baja prioridad)
         const palabrasClavePrecios = ["precio", "costo", "tarifa", "cuanto vale", "cuánto cuesta", "abre chapa"]; 
-        
-        // Palabras clave para apertura de puerta (Hogar) - ALTA PRIORIDAD
         const palabrasClaveAperturaHogar = ["abrir puerta", "abrir la puerta", "necesito abrir", "me quede por fuera", "apertura", "de apertura", "puerta de casa"];
-        
-        // Palabras clave para apertura de carro (Vehículo) - MÁXIMA PRIORIDAD
         const palabrasClaveAperturaCarro = ["abrir carro", "abrir el carro", "abrir vehiculo", "llaves carro", "puerta carro", "me quede por fuera carro", "carro"];
-        
-        // Palabras clave para Cambio de Clave / Soldadura (Prioridad Media)
         const palabrasClaveCambioClave = ["cambio de clave", "clave", "soldadura", "cambiar clave", "chapa"];
-        
         const palabrasClaveServicio = ["abrir", "puerta", "llave", "necesito", "tarabajo", "cerrajeria", "arreglar"];
         const palabrasClaveDisponibilidad = ["disponible", "horario", "ahora", "inmediato", "puede", "señor", "estará"];
 
+        // NUEVAS CLAVES DE HIP HOP
+        const palabrasClaveHipHop = ["hip hop", "rap", "cultura hip hop", "dj", "graffiti", "breakdance", "mc", "rapero", "ritmo", "flow"];
+        const palabrasClaveArtistasHipHop = ["snoop dogg", "eminem", "shakira", "sza", "jay z", "nas", "notorious", "tupac", "calle 13", "vico c"];
+
         const respuestaSaludo = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
         const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
-        
-        // RESPUESTA DE CONTACTO URGENTE
+
+        // Respuestas de Cerrajería (sin cambios)
         const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**`;
-
-        // RESPUESTA DE APERTURA DE CARRO
         const respuestaAperturaCarro = `La apertura de carro vale **70.000 COP** con domicilio. Si su carro es un modelo más optimizado (nuevo o con seguridad especial), es mejor enviar una foto o comunicarse directamente con el técnico vía **WhatsApp al ${NUMERO_MOVIL}**.`;
-
-        // RESPUESTA DE APERTURA DE PUERTA (Hogar)
         const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
-
-        // RESPUESTA DE PRECIOS SIMPLES (Cambio de clave)
         const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
-        
-        // *RESPUESTA DETALLADA DE SOLDADURA*
         const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP**.`;
-
-        // RESPUESTA DE OCUPADO PROACTIVO (General)
         const respuestaOcupadoProactivo = `Sí, ofrecemos el servicio de cerrajería. Actualmente, estoy finalizando un trabajo, pero si me dejas tu solicitud por **WhatsApp (${NUMERO_MOVIL})**, te aseguro que **te devuelvo la llamada inmediatamente** apenas termine (en pocos minutos). Así agilizamos tu servicio.`;
-
         const respuestaTiempo = `El trabajo actual está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
-        
+
+        // NUEVAS RESPUESTAS DE HIP HOP
+        const respuestaHipHopGeneral = "¡El Hip Hop es la voz de la calle y una cultura poderosa! Se basa en cuatro elementos principales: **MCing (rap), DJing, Graffiti y Breakdance**. ¿Quieres saber sobre un artista o un elemento en específico?";
+        const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
         const respuestaDefault = "Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre el servicio o la disponibilidad.";
 
 
@@ -351,15 +344,15 @@
             
             if (!userText.trim()) return;
             
-            // Cancela cualquier voz cuando el usuario envía un mensaje (escribe o dicta)
-            window.speechSynthesis.cancel(); 
+            // Cancela cualquier voz (si está activa)
+            if (speechEnabled) window.speechSynthesis.cancel(); 
 
             mostrarMensaje(userText, 'user-message');
 
             setTimeout(() => {
                 const botResponse = obtenerRespuesta(userText);
                 mostrarMensaje(botResponse, 'bot-message');
-                hablar(botResponse); // EL CHATBOT HABLA LA RESPUESTA
+                hablar(botResponse); // EL CHATBOT HABLA LA RESPUESTA (si speechEnabled es true)
             }, 500);
 
             userInput.value = '';
@@ -371,19 +364,35 @@
             const textoSinEspacios = normalizarParaComparar(userText.replace(/\s/g, '')); 
 
 
-            // 1. PRIORIDAD: SALUDOS
+            // 1. PRIORIDAD: SALUDOS / ESTADO (Social)
             for (const clave of palabrasClaveSaludos) {
                 if (textoNormalizado.includes(clave) || textoSinEspacios.includes(clave.replace(/\s/g, '').replace(' ', ''))) {
                     return respuestaSaludo; 
                 }
             }
-            
-            // 2. PRIORIDAD: ESTADO/ÁNIMO
             for (const clave of palabrasClaveEstado) {
                 if (textoNormalizado.includes(clave)) {
                     return respuestaEstado; 
                 }
             }
+            
+            // 2. NUEVA PRIORIDAD: HIP HOP (Intentamos responder, pero redirigimos a Cerrajería)
+            let esPreguntaDeHipHop = false;
+            for (const clave of palabrasClaveHipHop) {
+                if (textoNormalizado.includes(clave)) {
+                    return respuestaHipHopGeneral; 
+                }
+            }
+            for (const clave of palabrasClaveArtistasHipHop) {
+                if (textoNormalizado.includes(clave)) {
+                    esPreguntaDeHipHop = true; 
+                    break;
+                }
+            }
+            if (esPreguntaDeHipHop) {
+                return respuestaHipHopArtista;
+            }
+
 
             // 3. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA (Respuesta directa a llamar)
             for (const clave of palabrasClaveContacto) {
@@ -491,9 +500,15 @@
 
         // Mensaje de bienvenida inicial
         window.onload = () => {
+            // Aseguramos que el botón de micrófono esté oculto si la función no es soportada
+            if (!recognitionEnabled) {
+                 micButton.style.display = 'none';
+            }
+            
             const mensajeInicial = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
             mostrarMensaje(mensajeInicial, 'bot-message');
-            hablar(mensajeInicial);
+            // La función 'hablar' se encargará de verificar si debe hablar o no.
+            hablar(mensajeInicial); 
         }
     </script>
 </body>
