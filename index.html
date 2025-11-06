@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cerrajería Chatbot Inteligencia Artificial | Servicio Urgente WhatsApp 304 465 4556</title>
+    <title>Chatbot de Cerrajero (FINAL v26 - Voz Optimizada)</title>
     
-    <meta name="description" content="Cerrajería Chatbot Inteligencia Artificial (IA) a domicilio. Solicita servicio urgente de apertura de puertas, carros y cambio de clave por WhatsApp al 304 465 4556.">
+    <script async src="https://www.googletagmanager.com/gtag/js/id=G-PYYYEKQYGJ"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js/id=G-BTNX589XJM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-BTNX589XJM');
+</script>
     
-    
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BTNX589XJM"></script>
-    
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      // 3. Configuración del ID de medición
-      gtag('config', 'G-BTNX589XJM');
-    </script>
     <meta name="google-site-verification" content="5LseTdnrVvB0a4aEMx4vFb1X3IcRC9cRCejvfbkKjLc" />
     
     <style>
@@ -53,12 +50,23 @@
         h1 {
             margin: 0 0 5px 0;
             font-size: 1.5em;
-             /* 🔑 OPTIMIZACIÓN SEO: Título del Chatbot */
         }
 
         p {
             margin: 0;
             font-size: 0.9em;
+        }
+
+        /* Estilo para el botón de voz dentro del header */
+        #toggleVoice {
+            background: none; 
+            color: white; 
+            border: 1px solid white; 
+            border-radius: 5px; 
+            padding: 5px 10px; 
+            margin-top: 5px; 
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         .chat-box {
@@ -143,8 +151,9 @@
 
     <div class="chatbot-container">
         <header>
-            <h1>🔒 Cerrajería Chatbot Inteligencia Artificial</h1>
-            <p>Servicios a **Domicilio** (Apertura, Cambio de Clave). ¡Consulta por **WhatsApp 304 465 4556**!</p>
+            <h1>🔒 Cerrajero Asistente</h1>
+            <p>Servicios a **Domicilio** (Apertura, Cambio de Clave). ¡Consulta por **WhatsApp**!</p>
+            <button id="toggleVoice" style="background: none; color: white; border: 1px solid white; border-radius: 5px; padding: 5px 10px; margin-top: 5px; cursor: pointer;" onclick="toggleVoiceOutput()">🔊 Voz: ON</button>
         </header>
 
         <div class="chat-box" id="chatBox">
@@ -163,6 +172,8 @@
         // --- LÓGICA DE VOZ (Speech Synthesis) ---
         const synth = window.speechSynthesis;
         
+        let isVoiceActive = true; // La voz está activa por defecto
+        
         let voices = []; 
         let speechEnabled = ('speechSynthesis' in window); 
 
@@ -176,13 +187,13 @@
         }
         
         const hablar = (texto) => {
-            if (!speechEnabled) {
+            if (!speechEnabled || !isVoiceActive) {
                 return;
             }
             
-            if (isListening) {
-                recognition.stop();
-            }
+            // OPTIMIZACIÓN CLAVE: Cancela la voz anterior inmediatamente.
+            // Esto reduce la cola y el retraso entre mensajes.
+            window.speechSynthesis.cancel(); 
 
             const textoLimpio = texto.replace(/\*\*/g, '');
             const utterance = new SpeechSynthesisUtterance(textoLimpio);
@@ -216,6 +227,30 @@
             
             synth.speak(utterance);
         };
+        
+        // --- FUNCIÓN DE CONTROL DE VOZ PARA OPTIMIZACIÓN (MANTENIDA) ---
+        function toggleVoiceOutput() {
+            const button = document.getElementById('toggleVoice');
+            isVoiceActive = !isVoiceActive;
+
+            if (isVoiceActive) {
+                button.textContent = '🔊 Voz: ON';
+                button.style.backgroundColor = 'none';
+                button.style.backgroundColor = 'transparent'; 
+                // Opcional: Hablar una confirmación rápida
+                hablar("Voz activada."); 
+            } else {
+                window.speechSynthesis.cancel(); // Detiene cualquier reproducción en curso
+                button.textContent = '🔇 Voz: OFF';
+                button.style.backgroundColor = '#d32f2f'; // Rojo
+            }
+            
+            // >> EVENTO GA4: Voz desactivada/activada
+            if (typeof gtag === 'function') {
+                gtag('event', 'voice_toggled', {'voice_status': isVoiceActive ? 'on' : 'off'});
+            }
+        }
+        // --- FIN FUNCIÓN DE CONTROL DE VOZ ---
         
         // --- LÓGICA DE ESCUCHA (Speech Recognition) ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -315,7 +350,8 @@
         const palabrasClaveIdentidad = ["quien eres", "que eres", "eres un bot", "eres una ia"]; 
         const palabrasClaveCreador = ["quien te creo", "quien te hizo", "como te hicieron"]; 
 
-        const palabrasClaveOrigen = ["de donde eres", "de donde es", "donde estas", "ubicacion", "de donde son"]; 
+        // Se eliminó "ubicacion" para evitar conflicto con la pregunta específica de negocio.
+        const palabrasClaveOrigen = ["de donde eres", "de donde es", "donde estas", "de donde son"]; 
         const palabrasClaveContacto = ["numero", "telefono", "whatsapp", "contacto", "llamar", "cual es", "urgente", "comunique", "tecnico"]; 
         const palabrasClaveTiempo = ["cuando", "cuanto", "termina", "demora", "tiempo"];
         const palabrasClavePrecios = ["precio", "costo", "tarifa", "cuanto vale", "cuánto cuesta", "abre chapa"]; 
@@ -327,12 +363,17 @@
         const palabrasClaveHipHop = ["hip hop", "rap", "cultura hip hop", "dj", "graffiti", "breakdance", "mc", "rapero", "ritmo", "flow"];
         const palabrasClaveArtistasHipHop = ["snoop dogg", "eminem", "shakira", "sza", "jay z", "nas", "notorious", "tupac", "calle 13", "vico c"];
 
+        // DATOS Y CLAVES AÑADIDOS PARA 'LLAVES DE LA CASA' - UBICACIÓN ACTUALIZADA
+        const UBICACION_LLAVES_CASA = "Carrera 51 #55-57, cerca de donde estaba la antigua Plaza de Bello";
+        const TELEFONO_LLAVES_CASA = "301 325 9050";
+        const palabrasClaveUbicacionCasa = ["llaves de la casa", "llave de la casa", "prado bello", "carrera 51 55 57", "donde queda llaves de la casa", "antigua plaza de bello"];
+        // FIN DATOS Y CLAVES AÑADIDOS
+
         const respuestaSaludo = `¡Hola! Somos cerrajería a domicilio. Por favor, para un servicio **rápido y urgente**, envíanos tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**.`; 
         const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
         
         // RESPUESTAS DE IDENTIDAD ACTUALIZADAS:
         const respuestaIdentidad = "Soy una inteligencia artificial trabajando en una ley de datos.";
-        // Respuesta del creador con el nombre y descripción solicitados
         const respuestaCreador = "Fui creado por Alexander Amaya Atehortua, experto de la IA, software y hardware. ¿En qué servicio de cerrajería puedo ayudarte?"; 
         
         const respuestaOrigen = "Bello Antioquia, Medellín Colombia."; 
@@ -347,6 +388,10 @@
         const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
         const respuestaDefault = `Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre tu problema de **cerrajería a domicilio** (apertura/cambio de clave) y comunícate por **WhatsApp (${NUMERO_MOVIL})** para una respuesta más rápida.`;
 
+        // RESPUESTA AÑADIDA PARA 'LLAVES DE LA CASA' - USA LA UBICACIÓN ACTUALIZADA
+        const respuestaUbicacionCasa = `El negocio **"Llaves de la Casa"** está ubicado en **${UBICACION_LLAVES_CASA}**. El número de contacto es **${TELEFONO_LLAVES_CASA}**. Recuerda que este *chatbot* está principalmente enfocado en servicios de cerrajería **a domicilio**.`;
+        // FIN RESPUESTA AÑADIDA
+
 
         // --- LÓGICA CENTRAL DEL CHATBOT ---
 
@@ -356,6 +401,7 @@
             
             if (!userText.trim()) return;
             
+            // OPTIMIZACIÓN: Cancela la voz anterior al enviar un nuevo mensaje (reduce lag)
             if (speechEnabled) window.speechSynthesis.cancel(); 
 
             mostrarMensaje(userText, 'user-message');
@@ -371,6 +417,7 @@
             setTimeout(() => {
                 const botResponse = obtenerRespuesta(userText);
                 mostrarMensaje(botResponse, 'bot-message');
+                // La función hablar() internamente verifica si isVoiceActive es true
                 hablar(botResponse); 
             }, 500);
 
@@ -389,6 +436,15 @@
                 }
             };
 
+            
+            // 0. MÁXIMA PRIORIDAD: UBICACIÓN LLAVES DE LA CASA (Asegura que se responda esto primero)
+            for (const clave of palabrasClaveUbicacionCasa) {
+                if (textoNormalizado.includes(clave)) {
+                    enviarIntencion('ubicacion_llaves_casa'); 
+                    return respuestaUbicacionCasa; 
+                }
+            }
+
 
             // 1. PRIORIDAD: SALUDOS / ESTADO
             for (const clave of palabrasClaveSaludos) {
@@ -404,7 +460,7 @@
                 }
             }
             
-            // 1.6 PRIORIDAD: ORIGEN ESPECÍFICO 
+            // 1.6 PRIORIDAD: ORIGEN ESPECÍFICO (Se activa solo si no preguntó por el negocio)
             for (const clave of palabrasClaveOrigen) {
                 if (textoNormalizado.includes(clave)) {
                     enviarIntencion('origen_bot'); 
@@ -555,16 +611,16 @@
         // Mensaje de bienvenida inicial y chequeo de compatibilidad
         window.onload = () => {
             if (!recognitionEnabled) {
-                 console.warn("Reconocimiento de voz (micrófono) deshabilitado por el navegador o el entorno (ej: GitHub sin HTTPS).");
+                 console.warn("Reconocimiento de voz (micrófono) deshabilitado por el navegador o el entorno.");
             } 
             
             if (!speechEnabled) {
                  console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
             }
             
-            // 🔑 El mensaje inicial también contiene la información clave de SEO
-            const mensajeInicial = `¡Hola! Soy Cerrajería Chatbot Inteligencia Artificial. Para un servicio rápido, envía tu solicitud por **WhatsApp al ${NUMERO_MOVIL}**.`;
+            const mensajeInicial = `¡Hola! Somos cerrajería a domicilio. Para un servicio rápido, envía tu solicitud por **WhatsApp al ${NUMERO_MOVIL}**.`;
             mostrarMensaje(mensajeInicial, 'bot-message');
+            // Habla el mensaje de bienvenida por defecto
             hablar(mensajeInicial); 
         }
     </script>
