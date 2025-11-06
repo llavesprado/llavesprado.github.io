@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot de Cerrajero (FINAL v30 - Máxima Prioridad Chatbot)</title>
+    <title>Chatbot de Cerrajero (FINAL v31 - Nuevo Encabezado)</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-PYYYEKQYGJ"></script>
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-BTNX589XJM"></script>
@@ -190,7 +190,7 @@
     <div class="chatbot-container">
         <header>
             <h1>🔒 Cerrajero Asistente</h1>
-            <p>Servicios a **Domicilio** (Apertura, Cambio de Clave). ¡Consulta por **WhatsApp**!</p>
+            <p>**Pregúnta a inteligencia artificial sobre precio de chapas o servicios**</p>
             <button id="toggleVoice" style="background: none; color: white; border: 1px solid white; border-radius: 5px; padding: 5px 10px; margin-top: 5px; cursor: pointer;" onclick="toggleVoiceOutput()">🔊 Voz: ON</button>
         </header>
 
@@ -404,7 +404,7 @@
         const palabrasClaveVentaChatbot = [
             "ventas chatbot", "como vender chatbot", "crear chatbot", "negocio chatbot", "quiero un chatbot", 
             "como hago chatbot", "vender por redes", "servicio chatbot", "vender chatbot", "bot con ia", 
-            "chatbot inteligencia artificial", "informacion sobre chatbot", "bot", "negocio", "informacion" // <-- Claves ampliadas
+            "chatbot inteligencia artificial", "informacion sobre chatbot", "bot", "negocio", "informacion" 
         ];
         const respuestaVentaChatbot = "Claro, aquí creamos los chatbots para tu negocio. Depende lo que quieras que diga. En respuesta le preguntarán acerca de tu negocio, chatbot con Inteligencia artificial en tiempo real.";
         // FIN CLAVES CHATBOT
@@ -672,7 +672,7 @@
                  console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
             }
             
-            const mensajeInicial = `¡Hola! Somos cerrajería a domicilio. Para un servicio rápido, envía tu solicitud por **WhatsApp al ${NUMERO_MOVIL}**.`;
+            
             mostrarMensaje(mensajeInicial, 'bot-message');
             // Habla el mensaje de bienvenida por defecto
             hablar(mensajeInicial); 
