@@ -130,7 +130,7 @@
     <div class="chatbot-container">
         <header>
             <h1>🔒 Cerrajero Asistente</h1>
-            <p>Pregunta por la disponibilidad del servicio.</p>
+            <p>Servicios a **Domicilio** (Apertura, Cambio de Clave). ¡Consulta por **WhatsApp**!</p>
         </header>
 
         <div class="chat-box" id="chatBox">
@@ -280,7 +280,7 @@
         
         // --- LÓGICA JAVASCRIPT PRINCIPAL ---
 
-        // DATOS DE CONTACTO
+        // DATOS DE CONTACTO (Mantenidos)
         const NUMERO_MOVIL = "304 465 4556";
         const NUMERO_FIJO = "604 598 1532";
 
@@ -314,22 +314,31 @@
         const palabrasClaveHipHop = ["hip hop", "rap", "cultura hip hop", "dj", "graffiti", "breakdance", "mc", "rapero", "ritmo", "flow"];
         const palabrasClaveArtistasHipHop = ["snoop dogg", "eminem", "shakira", "sza", "jay z", "nas", "notorious", "tupac", "calle 13", "vico c"];
 
-        const respuestaSaludo = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
+        // Respuesta de Saludo (MODIFICADA para ser más proactiva y mencionar WhatsApp)
+        const respuestaSaludo = `¡Hola! Somos cerrajería a domicilio. Por favor, para un servicio **rápido y urgente**, envíanos tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**.`; 
+        
         const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
 
         // Respuestas de Cerrajería
-        const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**`;
+        // Respuesta Contacto (MODIFICADA para ser más visible y mencionar servicios clave)
+        const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**. Ofrecemos **apertura de puertas/carros, cambio de clave y servicios a domicilio**.`;
+        
         const respuestaAperturaCarro = `La apertura de carro vale **70.000 COP** con domicilio. Si su carro es un modelo más optimizado (nuevo o con seguridad especial), es mejor enviar una foto o comunicarse directamente con el técnico vía **WhatsApp al ${NUMERO_MOVIL}**.`;
         const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
         const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
         const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP**.`;
-        const respuestaOcupadoProactivo = `Sí, ofrecemos el servicio de cerrajería. Actualmente, estoy finalizando un trabajo, pero si me dejas tu solicitud por **WhatsApp (${NUMERO_MOVIL})**, te aseguro que **te devuelvo la llamada inmediatamente** apenas termine (en pocos minutos). Así agilizamos tu servicio.`;
+        
+        // Respuesta de Disponibilidad (MODIFICADA para enfatizar "a domicilio" y verificar disponibilidad actual, no 24h)
+        const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`;
+        
         const respuestaTiempo = `El trabajo actual está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
 
         // NUEVAS RESPUESTAS DE HIP HOP
         const respuestaHipHopGeneral = "¡El Hip Hop es la voz de la calle y una cultura poderosa! Se basa en cuatro elementos principales: **MCing (rap), DJing, Graffiti y Breakdance**. ¿Quieres saber sobre un artista o un elemento en específico?";
         const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
-        const respuestaDefault = "Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre el servicio o la disponibilidad.";
+        
+        // Respuesta por Defecto (MODIFICADA para reforzar WhatsApp y servicios)
+        const respuestaDefault = `Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre tu problema de **cerrajería a domicilio** (apertura/cambio de clave) y comunícate por **WhatsApp (${NUMERO_MOVIL})** para una respuesta más rápida.`;
 
 
         // --- LÓGICA CENTRAL DEL CHATBOT ---
@@ -508,7 +517,8 @@
                  console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
             }
             
-            const mensajeInicial = "¡Hola! ¿En qué puedo ayudarte con el servicio de cerrajería?";
+            // MENSAJE INICIAL MODIFICADO
+            const mensajeInicial = `¡Hola! Somos cerrajería a domicilio. Para un servicio rápido, envía tu solicitud por **WhatsApp al ${NUMERO_MOVIL}**.`;
             mostrarMensaje(mensajeInicial, 'bot-message');
             hablar(mensajeInicial); 
         }
