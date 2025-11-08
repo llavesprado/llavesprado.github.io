@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot de Cerrajero (FINAL v31 - Nuevo Encabezado)</title>
+    <title>Chatbot de Cerrajero (FINAL v33 - Voz Optimizada)</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-PYYYEKQYGJ"></script>
     <script async src="https://www.googletagmanager.com/gtag/js/id=G-BTNX589XJM"></script>
@@ -12,9 +12,10 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
+  // CORRECCIÓN GA4: Se configuran ambos ID para asegurar el flujo de datos.
+  gtag('config', 'G-PYYYEKQYGJ'); 
   gtag('config', 'G-BTNX589XJM');
 </script>
-    
     <meta name="google-site-verification" content="5LseTdnrVvB0a4aEMx4vFb1X3IcRC9cRCejvfbkKjLc" />
     
     <style>
@@ -23,41 +24,41 @@
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             display: flex;
-            flex-direction: column; /* Cambiado a columna para el banner superior */
+            flex-direction: column; 
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding-top: 50px; /* Espacio para que el banner superior no se pegue */
+            padding-top: 50px; 
         }
 
         /* --- ESTILOS DEL BANNER DESLIZANTE (MARQUEE CSS) --- */
         .marquee-container {
-            position: fixed; /* Fijo en la parte superior */
+            position: fixed; 
             top: 0;
             left: 0;
             width: 100%;
-            background-color: #ff9800; /* Naranja llamativo */
+            background-color: #ff9800; 
             color: white;
             padding: 5px 0;
-            overflow: hidden; /* Oculta el texto que se sale del contenedor */
-            white-space: nowrap; /* Asegura que el texto permanezca en una sola línea */
+            overflow: hidden; 
+            white-space: nowrap; 
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 1000; /* Asegura que esté por encima del chatbot */
+            z-index: 1000; 
             font-size: 1em;
             font-weight: bold;
         }
 
         .marquee-content {
             display: inline-block;
-            padding-left: 100%; /* Inicia el texto fuera de la vista a la derecha */
-            animation: marquee 15s linear infinite; /* 15s es la velocidad, 'linear' para suavidad, 'infinite' para que no pare */
+            padding-left: 100%; 
+            animation: marquee 15s linear infinite; 
         }
 
         /* Definición de la animación de desplazamiento */
         @keyframes marquee {
             0%   { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); } /* Mueve el contenido hacia la izquierda un 100% */
+            100% { transform: translate(-100%, 0); } 
         }
         
         /* --- ESTILOS DEL CHATBOT --- */
@@ -210,7 +211,7 @@
         // --- LÓGICA DE VOZ (Speech Synthesis) ---
         const synth = window.speechSynthesis;
         
-        let isVoiceActive = true; // La voz está activa por defecto
+        let isVoiceActive = true; 
         
         let voices = []; 
         let speechEnabled = ('speechSynthesis' in window); 
@@ -230,11 +231,15 @@
             }
             
             // OPTIMIZACIÓN CLAVE: Cancela la voz anterior inmediatamente.
-            // Esto reduce la cola y el retraso entre mensajes.
             window.speechSynthesis.cancel(); 
 
             const textoLimpio = texto.replace(/\*\*/g, '');
             const utterance = new SpeechSynthesisUtterance(textoLimpio);
+            
+            // --- LÓGICA REVISADA DE SELECCIÓN DE VOZ ---
+            if (voices.length === 0) {
+                populateVoiceList();
+            }
             
             let selectedVoice = null;
             
@@ -242,7 +247,7 @@
                 voice.lang.startsWith('es') && (
                 voice.name.includes('Google español (Estados Unidos)') || 
                 voice.name.includes('Google español de México') || 
-                (voice.name.includes('Google') && (voice.name.includes('Female') || voice.name.includes('Mujer') || !voice.name.includes('Male')) )
+                voice.name.includes('Google')
                 )
             );
             
@@ -252,6 +257,12 @@
                     (voice.name.includes('Female') || voice.name.includes('Mujer') || voice.name.includes('Isabel') || voice.name.includes('Lucia'))
                 );
             }
+            
+            if (!selectedVoice) {
+                 selectedVoice = voices.find(voice => voice.lang.startsWith('es'));
+            }
+            // --- FIN LÓGICA REVISADA DE SELECCIÓN DE VOZ ---
+
             
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
@@ -266,7 +277,7 @@
             synth.speak(utterance);
         };
         
-        // --- FUNCIÓN DE CONTROL DE VOZ PARA OPTIMIZACIÓN (MANTENIDA) ---
+        // --- FUNCIÓN DE CONTROL DE VOZ ---
         function toggleVoiceOutput() {
             const button = document.getElementById('toggleVoice');
             isVoiceActive = !isVoiceActive;
@@ -274,12 +285,11 @@
             if (isVoiceActive) {
                 button.textContent = '🔊 Voz: ON';
                 button.style.backgroundColor = 'transparent'; 
-                // Opcional: Hablar una confirmación rápida
                 hablar("Voz activada."); 
             } else {
-                window.speechSynthesis.cancel(); // Detiene cualquier reproducción en curso
+                window.speechSynthesis.cancel(); 
                 button.textContent = '🔇 Voz: OFF';
-                button.style.backgroundColor = '#d32f2f'; // Rojo
+                button.style.backgroundColor = '#d32f2f'; 
             }
             
             // >> EVENTO GA4: Voz desactivada/activada
@@ -387,7 +397,6 @@
         const palabrasClaveIdentidad = ["quien eres", "que eres", "eres un bot", "eres una ia"]; 
         const palabrasClaveCreador = ["quien te creo", "quien te hizo", "como te hicieron"]; 
 
-        // Se eliminó "ubicacion" para evitar conflicto con la pregunta específica de negocio.
         const palabrasClaveOrigen = ["de donde eres", "de donde es", "donde estas", "de donde son"]; 
         const palabrasClaveContacto = ["numero", "telefono", "whatsapp", "contacto", "llamar", "cual es", "urgente", "comunique", "tecnico"]; 
         const palabrasClaveTiempo = ["cuando", "cuanto", "termina", "demora", "tiempo"];
@@ -400,7 +409,7 @@
         const palabrasClaveHipHop = ["hip hop", "rap", "cultura hip hop", "dj", "graffiti", "breakdance", "mc", "rapero", "ritmo", "flow"];
         const palabrasClaveArtistasHipHop = ["snoop dogg", "eminem", "shakira", "sza", "jay z", "nas", "notorious", "tupac", "calle 13", "vico c"];
         
-        // CLAVES Y RESPUESTA PARA VENTA DE CHATBOTS (Aumentada la prioridad)
+        // CLAVES Y RESPUESTA PARA VENTA DE CHATBOTS
         const palabrasClaveVentaChatbot = [
             "ventas chatbot", "como vender chatbot", "crear chatbot", "negocio chatbot", "quiero un chatbot", 
             "como hago chatbot", "vender por redes", "servicio chatbot", "vender chatbot", "bot con ia", 
@@ -428,7 +437,7 @@
         const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
         const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
         const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP** (Setenta mil pesos colombianos).`;
-        const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio de cerrajería a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`; // Ligeramente ajustado
+        const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio de cerrajería a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`; 
         const respuestaTiempo = `El trabajo actual de cerrajería está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
         const respuestaHipHopGeneral = "¡El Hip Hop es la voz de la calle y una cultura poderosa! Se basa en cuatro elementos principales: **MCing (rap), DJing, Graffiti y Breakdance**. ¿Quieres saber sobre un artista o un elemento en específico?";
         const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
@@ -437,6 +446,9 @@
         // RESPUESTA AÑADIDA PARA 'LLAVES DE LA CASA' - USA LA UBICACIÓN ACTUALIZADA
         const respuestaUbicacionCasa = `El negocio **"Llaves de la Casa"** está ubicado en **${UBICACION_LLAVES_CASA}**. El número de contacto es **${TELEFONO_LLAVES_CASA}**. Recuerda que este *chatbot* está principalmente enfocado en servicios de cerrajería **a domicilio**.`;
         // FIN RESPUESTA AÑADIDA
+        
+        // Mensaje de Bienvenida
+        const mensajeInicial = respuestaSaludo;
 
 
         // --- LÓGICA CENTRAL DEL CHATBOT ---
@@ -483,7 +495,7 @@
             };
 
             
-            // 0. MÁXIMA PRIORIDAD: UBICACIÓN LLAVES DE LA CASA (Asegura que se responda esto primero)
+            // 0. MÁXIMA PRIORIDAD: UBICACIÓN LLAVES DE LA CASA 
             for (const clave of palabrasClaveUbicacionCasa) {
                 if (textoNormalizado.includes(clave)) {
                     enviarIntencion('ubicacion_llaves_casa'); 
@@ -506,7 +518,7 @@
                 }
             }
 
-            // 1.1. ALTA PRIORIDAD: VENTA/CREACIÓN DE CHATBOTS (¡MOVÍ ESTA LÓGICA AQUÍ!)
+            // 1.1. ALTA PRIORIDAD: VENTA/CREACIÓN DE CHATBOTS
             for (const clave of palabrasClaveVentaChatbot) {
                 if (textoNormalizado.includes(clave)) {
                     enviarIntencion('interes_venta_chatbot'); 
@@ -514,7 +526,7 @@
                 }
             }
             
-            // 1.6 PRIORIDAD: ORIGEN ESPECÍFICO (Se activa solo si no preguntó por el negocio)
+            // 1.6 PRIORIDAD: ORIGEN ESPECÍFICO
             for (const clave of palabrasClaveOrigen) {
                 if (textoNormalizado.includes(clave)) {
                     enviarIntencion('origen_bot'); 
@@ -522,7 +534,7 @@
                 }
             }
             
-            // 2. PRIORIDAD: IDENTIDAD (Lógica para separar creador de identidad general)
+            // 2. PRIORIDAD: IDENTIDAD
             // A) PREGUNTA POR EL CREADOR
             for (const clave of palabrasClaveCreador) {
                 if (textoNormalizado.includes(clave)) {
@@ -617,7 +629,7 @@
                 }
             }
 
-            // 11. PRIORIDAD BAJA: DISPONIBILIDAD O SOLICITUD DE SERVICIO (Respuesta General de Cerrajería - solo si no ha activado nada de lo anterior)
+            // 11. PRIORIDAD BAJA: DISPONIBILIDAD O SOLICITUD DE SERVICIO 
             let preguntaPorDisponibilidad = false;
             let esSolicitudServicio = false;
             for (const clave of palabrasClaveDisponibilidad) {
@@ -655,7 +667,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Permite enviar mensaje al presionar Enter
+        // Permite enviar mensaje al presionar Enter (Función solicitada)
         document.getElementById('userInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 enviarMensaje();
@@ -672,10 +684,8 @@
                  console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
             }
             
-            
-            mostrarMensaje(mensajeInicial, 'bot-message');
-            // Habla el mensaje de bienvenida por defecto
-            hablar(mensajeInicial); 
+            // Solo muestra el mensaje, la función hablar() se activa con la primera interacción del usuario.
+            mostrarMensaje(mensajeInicial, 'bot-message'); 
         }
     </script>
 </body>
