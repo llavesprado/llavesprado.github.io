@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="es" style="background-color: #1a1a2e;">
 <head>
-
-    <meta name="google-site-verification" content="HlVq4kyuRtkoEpidTW_PPlAbTQHbsxZMAPGl3koiJTI" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente Digital de Cerrajería - Neón Cyberpunk (V5.11 - Marquee Inferior)</title>
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYYYEKQYGJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PYYYEKQYGJ');
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
@@ -480,7 +486,7 @@
             // Lógica de Estado: El parpadeo solo ocurre si el robot está inactivo o pulsando.
             const isVisualFocus = eyeLeft.className.includes('alert') || eyeLeft.className.includes('info') || eyeLeft.className.includes('warning') || eyeLeft.className.includes('detail');
             
-            // Si está ocupado (hablando, procesando, etc.), NO parpadea.
+            // Si está ocupado (hablando, procesando, etc., o voz apagada), NO parpadea.
             const isBusy = isTyping || isProcessing || isListening || window.speechSynthesis.speaking || isVisualFocus; 
 
             let nextBlinkTime = 0;
