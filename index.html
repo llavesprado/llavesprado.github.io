@@ -1,308 +1,618 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" style="background-color: #1a1a2e;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot de Cerrajero (FINAL v33 - Voz Optimizada)</title>
+    <title>Asistente Digital de Cerrajería - Neón Cyberpunk (V5.10 - Parpadeo Autónomo y Color IA)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <script async src="https://www.googletagmanager.com/gtag/js/id=G-PYYYEKQYGJ"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js/id=G-BTNX589XJM"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  // CORRECCIÓN GA4: Se configuran ambos ID para asegurar el flujo de datos.
-  gtag('config', 'G-PYYYEKQYGJ'); 
-  gtag('config', 'G-BTNX589XJM');
-</script>
-    <meta name="google-site-verification" content="5LseTdnrVvB0a4aEMx4vFb1X3IcRC9cRCejvfbkKjLc" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ESTILOS CSS --- */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            flex-direction: column; 
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding-top: 50px; 
+        /* Eliminamos los colores fijos de CSS y los definimos en JS para control dinámico */
+        html { font-family: 'Inter', 'Orbitron', sans-serif; }
+        body { background-color: transparent; } 
+        /* Se ajusta ad-card ya que solo queda un elemento */
+        .ad-card { transform: translateX(-150%); transition: transform 1.0s ease-out; min-height: 80px; }
+        .ad-card.active { transform: translateX(0); }
+        .header-animated { transform: translateX(-100%); transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); display: inline-block; }
+        .header-animated.active { transform: translateX(0); }
+        
+        /* El título mantiene el cian primario, pero el 'glitch' usará la variable JS (colorPrincipal) */
+        .title-neon-glitch { 
+            font-family: 'Orbitron', sans-serif; 
+            color: var(--color-cian-neon); /* Cian fijo */
+            font-size: 2.25rem; 
+            font-weight: 900; 
+            text-shadow: 0 0 5px var(--color-cian-neon), 0 0 15px var(--color-cian-neon), 0 0 30px rgba(0, 240, 255, 0.8), 2px 2px 0 #005663; 
+            letter-spacing: 5px; 
+            animation: glitch-sutil 5s infinite linear alternate-reverse;
         }
-
-        /* --- ESTILOS DEL BANNER DESLIZANTE (MARQUEE CSS) --- */
-        .marquee-container {
-            position: fixed; 
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ff9800; 
-            color: white;
-            padding: 5px 0;
-            overflow: hidden; 
-            white-space: nowrap; 
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 1000; 
-            font-size: 1em;
-            font-weight: bold;
-        }
-
-        .marquee-content {
-            display: inline-block;
-            padding-left: 100%; 
-            animation: marquee 15s linear infinite; 
-        }
-
-        /* Definición de la animación de desplazamiento */
-        @keyframes marquee {
-            0%   { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); } 
+        @media (min-width: 640px) { .title-neon-glitch { font-size: 4rem; letter-spacing: 7px; } }
+        
+        /* El glitch ahora usa una variable CSS que será actualizada por JS */
+        @keyframes glitch-sutil { 
+            0% { text-shadow: 0 0 5px var(--color-cian-neon), 0 0 15px var(--color-cian-neon); transform: translate(0, 0); } 
+            5% { text-shadow: 0 0 5px var(--color-principal), 0 0 15px var(--color-principal); transform: translate(-1px, 1px); } 
+            10% { text-shadow: 0 0 5px var(--color-cian-neon), 0 0 15px var(--color-cian-neon); transform: translate(1px, -1px); } 
+            15% { transform: translate(0, 0); } 
+            100% { transform: translate(0, 0); } 
         }
         
-        /* --- ESTILOS DEL CHATBOT --- */
-        .chatbot-container {
-            width: 100%;
-            max-width: 400px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            background-color: #3f51b5;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-
-        h1 {
-            margin: 0 0 5px 0;
-            font-size: 1.5em;
-        }
-
-        p {
-            margin: 0;
-            font-size: 0.9em;
-        }
-
-        /* Estilo para el botón de voz dentro del header */
-        #toggleVoice {
-            background: none; 
-            color: white; 
-            border: 1px solid white; 
-            border-radius: 5px; 
-            padding: 5px 10px; 
-            margin-top: 5px; 
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .chat-box {
-            flex-grow: 1;
-            padding: 15px;
-            overflow-y: auto;
-            max-height: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .message {
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-
-        .user-message {
-            align-self: flex-end;
-            background-color: #e1ffc7;
-        }
-
-        .bot-message {
-            align-self: flex-start;
-            background-color: #f0f0f0;
-        }
-
-        .input-container {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid #eee;
-        }
-
-        #userInput {
-            flex-grow: 1; 
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            margin-right: 10px;
+        .chatbot-container { position: relative; height: 280px; display: flex; flex-direction: column; background-color: #2c2c54; border-radius: 15px 15px 30px 30px; overflow: hidden; z-index: 1; padding-top: 60px; }
+        .chatbot-container header { background-color: transparent; border-bottom: none; padding: 0; flex-shrink: 0; position: absolute; top: 0; left: 0; right: 0; height: 40px; z-index: 5; }
+        .ia-model-label { position: absolute; top: 5px; right: 8px; }
+        #toggleVoice { position: absolute; top: 5px; left: 8px; }
+        
+        /* El robot-head-mask usa la variable CSS del color principal para el borde y sombra */
+        .robot-head-mask { 
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 150px; height: 150px; border-radius: 50%; background-color: #1a1a2e; 
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), 0 0 30px var(--color-sombra-secundaria); 
+            border: 2px solid var(--color-cian-neon); z-index: 8; 
         }
         
-        .action-buttons {
-            display: flex;
-            gap: 5px;
+        .robot-eyes { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 25px; z-index: 10; }
+        .robot-eye { width: 20px; height: 45px; border-radius: 5px; animation: none; transition: none; } 
+        
+        /* Boca: Usa el cian neón */
+        .robot-mouth {
+            position: absolute; top: 110px; left: 50%; transform: translateX(-50%) scaleY(0.5); width: 50px; height: 5px; 
+            background-color: var(--color-cian-neon); 
+            border-radius: 2px;
+            box-shadow: 0 0 5px var(--color-cian-neon), 0 0 10px rgba(0, 240, 255, 0.7);
+            z-index: 9; transition: transform 0.03s ease-out, box-shadow 0.03s ease-out; 
         }
         
-        .input-container button {
-            background-color: #3f51b5;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 15px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-size: 1em;
-            line-height: 1;
+        /* Estado PULSING ahora usa el colorPrincipal dinámico */
+        .robot-eye.pulsing { background-color: var(--color-principal); animation: neon-pulse 2s infinite alternate-reverse; }
+        @keyframes neon-pulse { 
+            0% { box-shadow: 0 0 8px var(--color-principal), 0 0 15px var(--color-sombra-principal); } 
+            100% { box-shadow: 0 0 12px var(--color-principal), 0 0 25px var(--color-sombra-principal-fuerte); } 
         }
 
-        .input-container button:hover {
-            background-color: #303f9f;
+        /* Colores de estado fijos */
+        /* ESTADO INFO: Azul base con animación de cambio a Verde */
+        .robot-eye.info { 
+            background-color: #00BFFF; /* Azul vibrante como color base */
+            box-shadow: 0 0 10px #00BFFF, 0 0 20px rgba(0, 191, 255, 0.8); 
+            animation: info-color-flicker 1.5s infinite alternate-reverse; /* Nueva animación de cambio de color */
+        } 
+        
+        /* Nueva animación de cambio de color de Azul a Verde */
+        @keyframes info-color-flicker {
+            0% { 
+                background-color: #00BFFF; /* Azul */
+                box-shadow: 0 0 10px #00BFFF, 0 0 20px rgba(0, 191, 255, 0.8);
+            }
+            50% { 
+                background-color: #00FF00; /* Verde Claro */
+                box-shadow: 0 0 10px #00FF00, 0 0 20px rgba(0, 255, 0, 0.8);
+            }
+            100% { 
+                background-color: #00BFFF; /* Vuelve a Azul */
+                box-shadow: 0 0 10px #00BFFF, 0 0 20px rgba(0, 191, 255, 0.8);
+            }
         }
         
-        #micButton {
-            background-color: #e91e63;
-            padding: 10px 12px;
-        }
+        .robot-eye.speaking-eyes { background-color: #00FF00; box-shadow: 0 0 8px #00FF00, 0 0 15px rgba(0, 255, 0, 0.7); animation: neon-pulse-green 1.5s infinite alternate-reverse; }
+        @keyframes neon-pulse-green { 0% { box-shadow: 0 0 8px #00FF00, 0 0 15px rgba(0, 255, 0, 0.7); } 100% { box-shadow: 0 0 12px #00FF00, 0 0 25px rgba(0, 255, 0, 1); } }
+        .robot-eye.alert { background-color: #FF0000; box-shadow: 0 0 10px #FF0000, 0 0 20px rgba(255, 0, 0, 0.8); animation: neon-pulse 0.5s infinite alternate-reverse; }
+        .robot-eye.processing { background-color: #00f0ff; box-shadow: 0 0 10px #00f0ff, 0 0 20px rgba(0, 240, 255, 0.8); animation: processing-flicker 0.1s infinite alternate; }
+        .robot-eye.warning { background-color: #00f0ff; box-shadow: 0 0 10px #00f0ff, 0 0 20px rgba(0, 240, 255, 0.8); animation: detail-flicker 2s infinite step-end; }
+        @keyframes detail-flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+        @keyframes processing-flicker { 0% { opacity: 1; } 100% { opacity: 0.8; } }
+        .robot-eye.blink { transform: scaleY(0.1) !important; box-shadow: none !important; transition: transform 0.05s ease-out !important; animation: none !important; }
         
-        #micButton.listening {
-            background-color: #ff9800;
-        }
+        /* Visemas usan el cian fijo */
+        .robot-mouth.visema-A { transform: translateX(-50%) scaleY(6.5) scaleX(1.4); box-shadow: 0 0 16px var(--color-cian-neon), 0 0 32px rgba(0, 240, 255, 1); } 
+        .robot-mouth.visema-E { transform: translateX(-50%) scaleY(4.5) scaleX(1.1); box-shadow: 0 0 13px var(--color-cian-neon), 0 0 26px rgba(0, 240, 255, 0.9); } 
+        .robot-mouth.visema-I { transform: translateX(-50%) scaleY(2.0) scaleX(0.7); box-shadow: 0 0 9px var(--color-cian-neon), 0 0 18px rgba(0, 240, 255, 0.7); } 
+        .robot-mouth.visema-O { transform: translateX(-50%) scaleY(5.5) scaleX(1.2); box-shadow: 0 0 15px var(--color-cian-neon), 0 0 30px rgba(0, 240, 255, 1); } 
+        .robot-mouth.visema-U { transform: translateX(-50%) scaleY(5.0) scaleX(1.0); box-shadow: 0 0 14px var(--color-cian-neon), 0 0 28px rgba(0, 240, 255, 0.95); } 
+        .robot-mouth.visema-closed { transform: translateX(-50%) scaleY(0.5) scaleX(1.0); box-shadow: 0 0 5px var(--color-cian-neon), 0 0 10px rgba(0, 240, 255, 0.7); } 
+        .robot-mouth.visema-neutral { transform: translateX(-50%) scaleY(2.5) scaleX(1.1); box-shadow: 0 0 7px var(--color-cian-neon), 0 0 14px rgba(0, 240, 255, 0.6); } 
+        .robot-mouth.visema-silence { transform: translateX(-50%) scaleY(0.2) scaleX(0.8); box-shadow: 0 0 3px var(--color-cian-neon); } 
         
-        /* Estilo para botones desactivados */
-        #micButton:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
+        .chat-box { flex-grow: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; box-sizing: border-box; background-color: transparent; }
+        .input-container { display: flex; padding: 8px; border-top: none; flex-shrink: 0; }
+        .message { padding: 6px 10px; border-radius: 12px; max-width: 85%; font-size: 0.8em; }
+        .user-message { align-self: flex-end; background-color: #4a90e2; color: white; }
+        .bot-message { align-self: flex-start; background-color: #3f3f6e; color: var(--color-cian-neon); border: 1px solid var(--color-cian-neon);} 
+        #userInput { flex-grow: 1; padding: 6px; border-radius: 15px; font-size: 0.85em; background-color: #3f3f6e; color: var(--color-cian-neon); border: 1px solid var(--color-cian-neon); }
+        
+        /* Botones y micrófono usan la variable CSS del color principal */
+        #micButton { flex-shrink: 0; background-color: var(--color-principal); color: #1a1a2e; padding: 6px 8px; }
+        #micButton.listening { background-color: #f5a623; }
+        .action-buttons button { flex-shrink: 0; background-color: var(--color-principal); color: #1a1a2e; font-weight: bold; border-radius: 15px; padding: 6px 10px; margin-left: 5px; cursor: pointer; border: none; }
+        .action-buttons button:hover { opacity: 0.8; }
+        
     </style>
 </head>
-<body>
+<body class="min-h-screen p-2"> 
 
-    <div class="marquee-container">
-        <div class="marquee-content">
-            🚀 Vende más en tus redes: Creemos un Chatbot a tu medida, como este. ¡Pregúntanos cómo tener el tuyo! 
-        </div>
-    </div>
-
-    <div class="chatbot-container">
-        <header>
-            <h1>🔒 Cerrajero Asistente</h1>
-            <p>**Pregúnta a inteligencia artificial sobre precio de chapas o servicios**</p>
-            <button id="toggleVoice" style="background: none; color: white; border: 1px solid white; border-radius: 5px; padding: 5px 10px; margin-top: 5px; cursor: pointer;" onclick="toggleVoiceOutput()">🔊 Voz: ON</button>
+    <div class="max-w-4xl mx-auto">
+        
+        <header id="header-title" class="mb-6 overflow-hidden text-center">
+            <h1 id="animated-title" class="header-animated title-neon-glitch tracking-tight">
+                🔑 <span id="interactive-service-text">Servicio Técnico</span> de Cerrajería Llaves, para Casa, Auto o Moto
+            </h1>
         </header>
 
-        <div class="chat-box" id="chatBox">
+        <section id="ads-container" class="space-y-3">
+            
+            <div id="ad-3-chatbot" class="ad-card rounded-xl shadow-2xl p-2 border-l-4 border-cyan-500">
+                <div class="chatbot-container">
+                    
+                    <div class="robot-head-mask"></div>
+                    
+                    <div class="robot-eyes">
+                        <div id="robot-eye-left" class="robot-eye"></div>
+                        <div id="robot-eye-right" class="robot-eye"></div>
+                    </div>
+                    <div id="robot-mouth" class="robot-mouth visema-silence"></div> 
+                    
+                    <header>
+                        <div class="ia-model-label">Powered by Gemini Logic</div>
+                        <button id="toggleVoice" onclick="toggleVoiceOutput()">🔊 Voz: ON</button>
+                    </header>
+            
+                    <div class="chat-box" id="chatBox">
+                        <div class="message bot-message"></div>
+                    </div>
+            
+                    <div class="input-container">
+                        <input type="text" id="userInput" placeholder="Pregúntale a Gemini-Bot sobre cerrajería..." autofocus>
+                        <div class="action-buttons">
+                            <button id="micButton" onclick="iniciarReconocimiento()">🎙️</button>
+                            <button onclick="enviarMensaje()">Enviar</button>
+                        </div>
+                    </div>
+                </div>
             </div>
+            
+        </section>
 
-        <div class="input-container">
-            <input type="text" id="userInput" placeholder="Escribe aquí tu solicitud de cerrajería..." autofocus>
-            <div class="action-buttons">
-                <button id="micButton" onclick="iniciarReconocimiento()">🎙️</button>
-                <button onclick="enviarMensaje()">Enviar</button>
-            </div>
-        </div>
     </div>
 
     <script>
-        // --- LÓGICA DE VOZ (Speech Synthesis) ---
+        // --- CONSTANTES DE DATOS ---
+        const NUMERO_MOVIL = "304 465 4556";
+        const NUMERO_FIJO = "604 598 1532";
+        const UBICACION_LLAVES_CASA = "Carrera 51 #55-57, cerca de donde estaba la antigua Plaza de Bello";
+        const TELEFONO_LLAVES_CASA = "301 325 9050";
+
+        // --- PALETA DE COLORES DE LA IA ---
+        const COLOR_PALETTE = [
+            '#00FFFF', // Cian (el más común)
+            '#00BFFF', // Azul oscuro (el último solicitado)
+            '#00FF88', // Verde (alternativa)
+            '#33CCCC'  // Cian más suave
+        ];
+        const CIAN_NEON_FIJO = '#00f0ff'; // Usado para el título y el borde del bot
+        let colorIndex = 0;
+        let rootStyle;
+
+        // Función para cambiar el color principal
+        function setMainColor(colorHex) {
+            // Generar un color de sombra semi-transparente para el efecto neón
+            const r = parseInt(colorHex.substring(1, 3), 16);
+            const g = parseInt(colorHex.substring(3, 5), 16);
+            const b = parseInt(colorHex.substring(5, 7), 16);
+            
+            const rgbaFuerte = `rgba(${r}, ${g}, ${b}, 1.0)`;
+            const rgbaSuave = `rgba(${r}, ${g}, ${b}, 0.7)`;
+
+            rootStyle.setProperty('--color-principal', colorHex);
+            rootStyle.setProperty('--color-sombra-principal', rgbaSuave);
+            rootStyle.setProperty('--color-sombra-principal-fuerte', rgbaFuerte);
+            
+            document.getElementById('micButton').style.backgroundColor = colorHex;
+            
+            // Asegurar que el botón "Enviar" también use el color
+            const sendButton = document.querySelector('.action-buttons button:last-child');
+            if (sendButton) {
+                sendButton.style.backgroundColor = colorHex;
+            }
+        }
+        
+        /**
+         * Ciclo de colores para simular una IA "pensante"
+         */
+        function cycleColors() {
+            colorIndex = (colorIndex + 1) % COLOR_PALETTE.length;
+            setMainColor(COLOR_PALETTE[colorIndex]);
+            
+            // Ciclo cada 8 segundos
+            setTimeout(cycleColors, 8000); 
+        }
+
+        // --- VARIABLES GLOBALES PARA CONTROL DEL ROBOT ---
+        let isTyping = false;     
+        let isProcessing = false; 
+        let isListening = false;
+        let eyeLeft, eyeRight, mouth;
+        let visemaTimeout; 
+        
+        const getDomElements = () => {
+            eyeLeft = document.getElementById('robot-eye-left');
+            eyeRight = document.getElementById('robot-eye-right');
+            mouth = document.getElementById('robot-mouth');
+            rootStyle = document.documentElement.style;
+            
+            // Inicializar las variables CSS estáticas que no cambian en el ciclo
+            rootStyle.setProperty('--color-cian-neon', CIAN_NEON_FIJO); 
+            rootStyle.setProperty('--color-sombra-secundaria', 'rgba(255, 0, 255, 0.4)'); // Sombra morada para el contraste
+        };
+
+        // --- LÓGICA DE VISEMAS MEJORADA PARA EL ESPAÑOL ---
+        
+        const VISEMA_MAP = {
+            'A': 'visema-A', 'E': 'visema-E', 'I': 'visema-I',  
+            'O': 'visema-O', 'U': 'visema-U',
+            'closed': 'visema-closed', 'neutral': 'visema-neutral', 
+            'silence': 'visema-silence'  
+        };
+        
+        // Mapeo refinado de letras/grupos/NÚMEROS a visemas en Español
+        const VISEMA_GROUPS = {
+            'A': 'A', 'E': 'E', 'I': 'I', 'O': 'O', 'U': 'U',
+            'M': 'closed', 'P': 'closed', 'B': 'closed',
+            'F': 'closed', 'V': 'closed', 'W': 'closed', 
+            'T': 'I', 'D': 'I', 'S': 'I', 'Z': 'I', 
+            'L': 'neutral', 'N': 'neutral', 
+            'R': 'U', 'RR': 'U', 
+            'Ñ': 'neutral', 'Y': 'neutral', 'LL': 'neutral',
+            'C': 'E', 'Q': 'E', 'K': 'E', 'G': 'E', 
+            'J': 'A', 'H': 'A', 'X': 'neutral', 
+            'CH': 'neutral',
+
+            // VISEMAS PARA NÚMEROS (Fonética en Español)
+            '0': 'O', '1': 'I', '2': 'U', '3': 'E', '4': 'A', 
+            '5': 'I', '6': 'E', '7': 'E', '8': 'O', '9': 'E'  
+        };
+        
+        // Duraciones de pausas (AJUSTADAS A 20MS)
+        const PAUSE_DURATIONS = {
+            ' ': 20,    // Espacio: 20ms (Pausa mínima perceptible)
+            ',': 20,    // Coma: 20ms
+            '.': 20,    // Punto/Fin de frase: 20ms
+            '?': 20,   
+            '!': 20,   
+            ';': 20,   
+            ':': 20    
+        };
+        const PUNCTUATION_REGEX = /[.,?!;:]/g;
+
+
+        // --- SIMULACIÓN AVANZADA DE VISEMAS (Movimiento de Boca) ---
+        function simulateVisemes(text, rate = 1.0) {
+            window.clearTimeout(visemaTimeout);
+            
+            if (window.speechSynthesis.speaking === false || !isVoiceActive) {
+                 mouth.className = 'robot-mouth visema-silence';
+                 return;
+            }
+
+            // 1. Normalizar y limpiar texto y buscar grupos fonéticos.
+            let cleanedText = normalizarParaComparar(text).toUpperCase();
+            
+            cleanedText = cleanedText
+                .replace(/RR/g, '{RR}')
+                .replace(/LL/g, '{LL}')
+                .replace(/CH/g, '{CH}');
+
+            // 2. Insertar marcadores de pausa y limpiar
+            cleanedText = cleanedText
+                .replace(PUNCTUATION_REGEX, (match) => ` ${match} `)
+                .replace(/[^A-Z0-9{}\sÑ,.]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+                
+            let sequence = [];
+            const tokens = cleanedText.split(''); 
+
+            // 3. Generar la secuencia de visemas y duraciones
+            for (let i = 0; i < tokens.length; i++) {
+                const char = tokens[i];
+                let visemaType;
+                let durationOverride = null;
+
+                if (PAUSE_DURATIONS.hasOwnProperty(char)) {
+                    visemaType = 'silence';
+                    durationOverride = PAUSE_DURATIONS[char];
+                } else {
+                    if (char.startsWith('{') && char.endsWith('}')) {
+                        const marker = char.slice(1, -1); 
+                        visemaType = VISEMA_GROUPS[marker] || 'neutral';
+                    } else {
+                        visemaType = VISEMA_GROUPS[char] || 'neutral';
+                    }
+                }
+                
+                if (visemaType) {
+                    sequence.push({ 
+                        type: visemaType, 
+                        duration: durationOverride 
+                    });
+                }
+            }
+
+            let index = 0;
+            const animateNextVisema = () => {
+                if (window.speechSynthesis.speaking === false || index >= sequence.length || !isVoiceActive) {
+                    window.clearTimeout(visemaTimeout); 
+                    mouth.className = 'robot-mouth visema-silence';
+                    if (mouth.style.transitionDuration !== '0.03s') { 
+                        mouth.style.transitionDuration = '0.03s';
+                    }
+                    return;
+                }
+
+                const item = sequence[index];
+                const className = VISEMA_MAP[item.type];
+                
+                if (mouth.className !== `robot-mouth ${className}`) {
+                    mouth.className = `robot-mouth ${className}`;
+                }
+
+                index++;
+
+                // Calcular la duración:
+                let duration;
+                if (item.duration !== null) {
+                    duration = item.duration; 
+                } else {
+                    // Duración base: 60ms
+                    const baseDuration = 60; 
+                    const variation = (Math.random() * 6 - 3); 
+                    
+                    // CLAVE: Aplicar la inversa del 'rate' para acelerar/ralentizar la animación.
+                    duration = (baseDuration / rate) + variation; 
+
+                    if (duration < 20) duration = 20; 
+                }
+                
+                visemaTimeout = window.setTimeout(animateNextVisema, duration);
+            };
+            
+            // Llamar a la función de animación inmediatamente para la mejor sincronización
+            animateNextVisema(); 
+        }
+
+        // --- FUNCIONES AUXILIARES DE ANIMACIÓN (Ojos) ---
+        
+        const blink = (eye) => {
+            eye.classList.add('blink');
+            setTimeout(() => { eye.classList.remove('blink'); }, 200); 
+        };
+
+        /**
+         * Parpadeo autónomo basado en probabilidad para simular comportamiento natural.
+         */
+        function startEyeBlinking() {
+            if (!eyeLeft || !eyeRight) { 
+                setTimeout(startEyeBlinking, 100); // Intenta de nuevo si aún no están listos
+                return;
+            }
+
+            // Lógica de Estado: El parpadeo solo ocurre si el robot está inactivo o pulsando.
+            const isVisualFocus = eyeLeft.className.includes('alert') || eyeLeft.className.includes('info') || eyeLeft.className.includes('warning') || eyeLeft.className.includes('detail');
+            
+            // Si está ocupado (hablando, procesando, etc.), NO parpadea.
+            const isBusy = isTyping || isProcessing || isListening || window.speechSynthesis.speaking || isVisualFocus; 
+
+            let nextBlinkTime = 0;
+            
+            if (isBusy) {
+                // Si está ocupado, espera un tiempo más corto para reevaluar.
+                nextBlinkTime = 500; 
+            } else {
+                // Probabilidad aumentada para un parpadeo más seguido (0.35)
+                const randomChance = Math.random();
+                
+                if (randomChance < 0.35) { 
+                    blink(eyeLeft);
+                    blink(eyeRight);
+                    // Intervalo corto (0.2s - 0.8s)
+                    nextBlinkTime = Math.random() * 600 + 200; 
+                } else {
+                    // Intervalo de espera más largo (0.5s - 2s)
+                    nextBlinkTime = Math.random() * 1500 + 500; 
+                }
+            }
+            
+            // Re-ejecutar la función con el nuevo temporizador
+            setTimeout(startEyeBlinking, nextBlinkTime);
+        }
+
+        const startEyeMovement = () => {
+            const userInput = document.getElementById('userInput');
+            if (!eyeLeft || !eyeRight || !userInput) { return; }
+            
+            userInput.addEventListener('focus', () => {
+                isTyping = true; 
+                // Estado 'info' (Azul base con cambio a Verde) se activa al enfocarse en el input
+                eyeLeft.className = 'robot-eye info'; 
+                eyeRight.className = 'robot-eye info';
+                mouth.className = 'robot-mouth visema-silence'; 
+                window.clearTimeout(visemaTimeout); 
+                window.speechSynthesis.cancel();
+            });
+            
+            userInput.addEventListener('blur', () => {
+                isTyping = false; 
+                if (!window.speechSynthesis.speaking && !isProcessing && !isListening) {
+                    eyeLeft.className = 'robot-eye pulsing';
+                    eyeRight.className = 'robot-eye pulsing';
+                    mouth.className = 'robot-mouth visema-silence';
+                }
+            });
+        };
+
+        // --- FUNCIÓN PRINCIPAL DE HABLA y SINCRONIZACIÓN DE OJOS ---
+        
+        function estimateSpeechDuration(text, rate) {
+            const charCount = text.length;
+            let duration = (charCount * 60 / rate); 
+            
+            duration += text.split(' ').length * 20; 
+            duration += (text.match(/[.,?!]/g) || []).length * 100; 
+
+            return Math.max(duration, 1000); 
+        }
+
+        const syncMouthAndEyes = (utterance, text, tone) => {
+            if (!mouth || !eyeLeft || !eyeRight) return;
+            
+            let eyeClass = 'speaking-eyes'; 
+            let speechRate = 1.0; 
+            let speechDuration = 0; 
+
+            if (tone === 'EMERGENCIA') {
+                eyeClass = 'alert';
+                speechRate = 1.1; 
+            } else if (tone === 'LOGÍSTICA') {
+                // Durante el habla, aún usamos el verde fijo
+                eyeClass = 'speaking-eyes';
+                speechRate = 0.9; 
+            } else if (tone === 'ADVERTENCIA') {
+                // Usa el color "computarizado" (cian) para advertencia
+                eyeClass = 'warning'; 
+                speechRate = 1.0;
+            } else if (text.split(/\s+/).length > 25) { 
+                eyeClass = 'detail';
+                speechRate = 0.95; 
+            } else if (tone === 'NEUTRO') {
+                eyeClass = 'speaking-eyes';
+                speechRate = 1.0;
+            }
+            
+            speechDuration = estimateSpeechDuration(text, speechRate);
+            eyeLeft.className = 'robot-eye ' + eyeClass;
+            eyeRight.className = 'robot-eye ' + eyeClass;
+            utterance.rate = speechRate; 
+            
+            const resetAnimations = () => {
+                window.clearTimeout(visemaTimeout); 
+                
+                mouth.className = 'robot-mouth visema-silence'; 
+                setTimeout(() => {
+                    if (mouth) mouth.style.transitionDuration = '0.03s'; 
+                }, 10); 
+                
+                // Si el input está enfocado, vuelve al estado 'info' (Azul/Verde)
+                if (document.getElementById('userInput') === document.activeElement) {
+                    eyeLeft.className = 'robot-eye info'; 
+                    eyeRight.className = 'robot-eye info';
+                } else {
+                    eyeLeft.className = 'robot-eye pulsing';
+                    eyeRight.className = 'robot-eye pulsing';
+                }
+            };
+
+
+            utterance.onstart = () => { 
+                mouth.style.transitionDuration = '0s'; 
+                simulateVisemes(text, speechRate); 
+                
+                setTimeout(resetAnimations, speechDuration);
+            };
+            
+            utterance.onend = resetAnimations;
+            utterance.onerror = utterance.oncancel = resetAnimations; 
+        }
+        
+        // --- LÓGICA DE VOZ, ESCUCHA y BASE DE CONOCIMIENTO ---
         const synth = window.speechSynthesis;
-        
         let isVoiceActive = true; 
-        
         let voices = []; 
         let speechEnabled = ('speechSynthesis' in window); 
+        let spanishVoice = null; 
 
-        function populateVoiceList() {
-          voices = speechSynthesis.getVoices();
+        function populateVoiceList() { 
+            voices = speechSynthesis.getVoices(); 
+            spanishVoice = voices.find(voice => 
+                voice.lang.startsWith('es-ES') || 
+                voice.lang.startsWith('es-MX') || 
+                voice.lang.startsWith('es')
+            );
+            
+            if (!spanishVoice && voices.length > 0) {
+                 spanishVoice = voices[0];
+            }
+            
         }
-
-        if (speechEnabled) {
-          populateVoiceList(); 
-          speechSynthesis.onvoiceschanged = populateVoiceList;
-        }
+        if (speechEnabled) { populateVoiceList(); speechSynthesis.onvoiceschanged = populateVoiceList; }
         
-        const hablar = (texto) => {
-            if (!speechEnabled || !isVoiceActive) {
+        const hablar = (texto, tone) => {
+            if (!isVoiceActive) {
+                eyeLeft.className = 'robot-eye pulsing';
+                eyeRight.className = 'robot-eye pulsing';
+                mouth.className = 'robot-mouth visema-silence';
                 return;
             }
             
-            // OPTIMIZACIÓN CLAVE: Cancela la voz anterior inmediatamente.
             window.speechSynthesis.cancel(); 
-
+            window.clearTimeout(visemaTimeout);
+            synth.cancel(); 
+            
             const textoLimpio = texto.replace(/\*\*/g, '');
-            const utterance = new SpeechSynthesisUtterance(textoLimpio);
-            
-            // --- LÓGICA REVISADA DE SELECCIÓN DE VOZ ---
-            if (voices.length === 0) {
-                populateVoiceList();
-            }
-            
-            let selectedVoice = null;
-            
-            selectedVoice = voices.find(voice => 
-                voice.lang.startsWith('es') && (
-                voice.name.includes('Google español (Estados Unidos)') || 
-                voice.name.includes('Google español de México') || 
-                voice.name.includes('Google')
-                )
-            );
-            
-            if (!selectedVoice) {
-                selectedVoice = voices.find(voice => 
-                    voice.lang.startsWith('es') && 
-                    (voice.name.includes('Female') || voice.name.includes('Mujer') || voice.name.includes('Isabel') || voice.name.includes('Lucia'))
-                );
-            }
-            
-            if (!selectedVoice) {
-                 selectedVoice = voices.find(voice => voice.lang.startsWith('es'));
-            }
-            // --- FIN LÓGICA REVISADA DE SELECCIÓN DE VOZ ---
 
+            // Reemplazo con comas para forzar la lectura dígito por dígito para mejor sincronización.
+            let textoParaTTS = textoLimpio.replace(NUMERO_MOVIL, '3, 0, 4, 4, 6, 5, 4, 5, 5, 6'); 
+            textoParaTTS = textoParaTTS.replace(NUMERO_FIJO, '6, 0, 4, 5, 9, 8, 1, 5, 3, 2'); 
+            textoParaTTS = textoParaTTS.replace(TELEFONO_LLAVES_CASA, '3, 0, 1, 3, 2, 5, 9, 0, 5, 0'); 
+
+            const utterance = new SpeechSynthesisUtterance(textoParaTTS); 
             
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-                utterance.lang = selectedVoice.lang; 
+            if (spanishVoice) {
+                utterance.voice = spanishVoice;
+                utterance.lang = spanishVoice.lang; 
             } else {
-                utterance.lang = 'es-US'; 
+                utterance.lang = 'es-ES'; 
             }
-            
-            utterance.rate = 1.0; 
+
+            syncMouthAndEyes(utterance, textoLimpio, tone); 
             utterance.pitch = 1.0; 
-            
             synth.speak(utterance);
         };
         
-        // --- FUNCIÓN DE CONTROL DE VOZ ---
         function toggleVoiceOutput() {
             const button = document.getElementById('toggleVoice');
             isVoiceActive = !isVoiceActive;
+            
+            window.speechSynthesis.cancel(); 
+            window.clearTimeout(visemaTimeout);
+            synth.cancel(); 
+
+            if(mouth) {
+                mouth.style.transitionDuration = '0.03s'; 
+                mouth.className = 'robot-mouth visema-silence'; 
+            }
+            
+            // Si la voz está desactivada, el robot debe volver al estado "esperando pregunta" (info)
+            if (document.getElementById('userInput') === document.activeElement) {
+                if(eyeLeft) eyeLeft.className = 'robot-eye info'; 
+                if(eyeRight) eyeRight.className = 'robot-eye info';
+            } else {
+                if(eyeLeft) eyeLeft.className = 'robot-eye pulsing'; 
+                if(eyeRight) eyeRight.className = 'robot-eye pulsing';
+            }
+
 
             if (isVoiceActive) {
                 button.textContent = '🔊 Voz: ON';
                 button.style.backgroundColor = 'transparent'; 
-                hablar("Voz activada."); 
+                hablar("Voz activada.", 'NEUTRO'); 
             } else {
-                window.speechSynthesis.cancel(); 
                 button.textContent = '🔇 Voz: OFF';
                 button.style.backgroundColor = '#d32f2f'; 
             }
-            
-            // >> EVENTO GA4: Voz desactivada/activada
-            if (typeof gtag === 'function') {
-                gtag('event', 'voice_toggled', {'voice_status': isVoiceActive ? 'on' : 'off'});
-            }
         }
-        // --- FIN FUNCIÓN DE CONTROL DE VOZ ---
         
-        // --- LÓGICA DE ESCUCHA (Speech Recognition) ---
+        // --- Lógica de Reconocimiento de Voz ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
-        let isListening = false;
         const micButton = document.getElementById('micButton');
         let recognitionEnabled = false; 
 
@@ -313,380 +623,179 @@
             recognition.interimResults = false;
             recognitionEnabled = true; 
 
-            recognition.onstart = () => {
-                isListening = true;
-                micButton.classList.add('listening');
-                micButton.textContent = '🔴';
-                document.getElementById('userInput').placeholder = "Escuchando...";
+            recognition.onstart = () => { 
+                isListening = true; 
+                micButton.classList.add('listening'); 
+                micButton.textContent = '🔴'; 
+                document.getElementById('userInput').placeholder = "Escuchando..."; 
+                // Estado 'processing' (Cian) se activa al escuchar
+                eyeLeft.className = 'robot-eye processing'; 
+                eyeRight.className = 'robot-eye processing';
                 
-                // >> EVENTO GA4: Micrófono usado
-                if (typeof gtag === 'function') {
-                    gtag('event', 'mic_used'); 
-                }
+                if(mouth) mouth.style.transitionDuration = '0.03s';
+                mouth.className = 'robot-mouth visema-silence'; 
             };
-
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById('userInput').value = transcript;
-                enviarMensaje();
+                recognition.onend(); 
+                enviarMensaje(); 
+            };
+            recognition.onend = () => { 
+                isListening = false; 
+                micButton.classList.remove('listening'); 
+                micButton.textContent = '🎙️'; 
+                document.getElementById('userInput').placeholder = "Pregúntale a Gemini-Bot sobre cerrajería..."; 
                 
-                isListening = false;
-                micButton.classList.remove('listening');
-                micButton.textContent = '🎙️';
-                document.getElementById('userInput').placeholder = "Escribe aquí tu solicitud de cerrajería...";
+                if(mouth) mouth.style.transitionDuration = '0.03s';
+                mouth.className = 'robot-mouth visema-silence'; 
+                
+                // Vuelve al estado de "esperando pregunta" (info/Azul-Verde) si el input está enfocado.
+                if (document.getElementById('userInput') === document.activeElement) {
+                    eyeLeft.className = 'robot-eye info'; 
+                    eyeRight.className = 'robot-eye info';
+                }
             };
-
-            recognition.onend = () => {
-                isListening = false;
-                micButton.classList.remove('listening');
-                micButton.textContent = '🎙️';
-                document.getElementById('userInput').placeholder = "Escribe aquí tu solicitud de cerrajería...";
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Error de reconocimiento de voz:', event.error);
-                isListening = false;
-                micButton.classList.remove('listening');
-                micButton.textContent = '🎙️';
-                document.getElementById('userInput').placeholder = "Escribe aquí tu solicitud de cerrajería...";
+            recognition.onerror = (event) => { 
+                console.error('Error de voz:', event.error); 
+                recognition.onend(); 
             };
         } else {
-             micButton.style.display = 'none'; 
-             micButton.disabled = true; 
+             if(micButton) micButton.style.display = 'none'; 
         }
 
         function iniciarReconocimiento() {
             if (recognition && recognitionEnabled) {
                 window.speechSynthesis.cancel(); 
-
-                if (isListening) {
-                    recognition.stop();
-                } else {
-                    recognition.start();
+                window.clearTimeout(visemaTimeout);
+                
+                if (isListening) { 
+                    recognition.stop(); 
+                } else { 
+                    recognition.start(); 
                 }
             } else {
-                 alert("La función de dictado por voz no está disponible en este entorno. Por favor, escribe tu mensaje.");
+                 mostrarMensaje("La función de dictado por voz no está disponible.", 'bot-message');
             }
         }
         
-        
-        // --- LÓGICA JAVASCRIPT PRINCIPAL ---
+        // --- LÓGICA DE RESPUESTAS (Base de Conocimiento) ---
+        const quitarTildes = (texto) => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+        const normalizarParaComparar = (str) => quitarTildes(str).toLowerCase().trim();
 
-        // DATOS DE CONTACTO
-        const NUMERO_MOVIL = "304 465 4556";
-        const NUMERO_FIJO = "604 598 1532";
+        function obtenerRespuesta(userText) {
+            // Lógica modificada para responder SIEMPRE "Estoy en construcción"
+            return { respuesta: "Estoy en construcción.", tono: 'NEUTRO' };
+        }
 
-        // FUNCIÓN CLAVE PARA LA NORMALIZACIÓN (IGNORAR TILDES)
-        const quitarTildes = (texto) => {
-            return texto
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, "");
-        };
-
-        // Normaliza a minúsculas y elimina tildes
-        const normalizarParaComparar = (str) => {
-            return quitarTildes(str).toLowerCase().trim();
-        };
-
-
-        // --- BASE DE CONOCIMIENTO Y RESPUESTAS ---
-        const palabrasClaveSaludos = ["hola", "buenos dias", "buenas tardes", "buenas noches", "saludo"];
-        const palabrasClaveEstado = ["como esta", "como va", "que tal"];
-        
-        // Claves separadas para identidad
-        const palabrasClaveIdentidad = ["quien eres", "que eres", "eres un bot", "eres una ia"]; 
-        const palabrasClaveCreador = ["quien te creo", "quien te hizo", "como te hicieron"]; 
-
-        const palabrasClaveOrigen = ["de donde eres", "de donde es", "donde estas", "de donde son"]; 
-        const palabrasClaveContacto = ["numero", "telefono", "whatsapp", "contacto", "llamar", "cual es", "urgente", "comunique", "tecnico"]; 
-        const palabrasClaveTiempo = ["cuando", "cuanto", "termina", "demora", "tiempo"];
-        const palabrasClavePrecios = ["precio", "costo", "tarifa", "cuanto vale", "cuánto cuesta", "abre chapa"]; 
-        const palabrasClaveAperturaHogar = ["abrir puerta", "abrir la puerta", "necesito abrir", "me quede por fuera", "apertura", "de apertura", "puerta de casa"];
-        const palabrasClaveAperturaCarro = ["abrir carro", "abrir el carro", "abrir vehiculo", "llaves carro", "puerta carro", "me quede por fuera carro", "carro"];
-        const palabrasClaveCambioClave = ["cambio de clave", "clave", "soldadura", "cambiar clave", "chapa"];
-        const palabrasClaveServicio = ["abrir", "puerta", "llave", "necesito", "tarabajo", "cerrajeria", "arreglar"];
-        const palabrasClaveDisponibilidad = ["disponible", "horario", "ahora", "inmediato", "puede", "señor", "estará"];
-        const palabrasClaveHipHop = ["hip hop", "rap", "cultura hip hop", "dj", "graffiti", "breakdance", "mc", "rapero", "ritmo", "flow"];
-        const palabrasClaveArtistasHipHop = ["snoop dogg", "eminem", "shakira", "sza", "jay z", "nas", "notorious", "tupac", "calle 13", "vico c"];
-        
-        // CLAVES Y RESPUESTA PARA VENTA DE CHATBOTS
-        const palabrasClaveVentaChatbot = [
-            "ventas chatbot", "como vender chatbot", "crear chatbot", "negocio chatbot", "quiero un chatbot", 
-            "como hago chatbot", "vender por redes", "servicio chatbot", "vender chatbot", "bot con ia", 
-            "chatbot inteligencia artificial", "informacion sobre chatbot", "bot", "negocio", "informacion" 
-        ];
-        const respuestaVentaChatbot = "Claro, aquí creamos los chatbots para tu negocio. Depende lo que quieras que diga. En respuesta le preguntarán acerca de tu negocio, chatbot con Inteligencia artificial en tiempo real.";
-        // FIN CLAVES CHATBOT
-
-        // DATOS Y CLAVES AÑADIDOS PARA 'LLAVES DE LA CASA' - UBICACIÓN ACTUALIZADA
-        const UBICACION_LLAVES_CASA = "Carrera 51 #55-57, cerca de donde estaba la antigua Plaza de Bello";
-        const TELEFONO_LLAVES_CASA = "301 325 9050";
-        const palabrasClaveUbicacionCasa = ["llaves de la casa", "llave de la casa", "prado bello", "carrera 51 55 57", "donde queda llaves de la casa", "antigua plaza de bello"];
-        // FIN DATOS Y CLAVES AÑADIDOS
-
-        const respuestaSaludo = `¡Hola! Somos cerrajería a domicilio. Por favor, para un servicio **rápido y urgente**, envíanos tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**.`; 
-        const respuestaEstado = "¡Muy bien, gracias por preguntar! ¿En qué puedo ayudarte con el servicio de cerrajería?";
-        
-        // RESPUESTAS DE IDENTIDAD ACTUALIZADAS:
-        const respuestaIdentidad = "Soy una inteligencia artificial trabajando en una ley de datos.";
-        const respuestaCreador = "Fui creado por Alexander Amaya Atehortua, experto de la IA, software y hardware. ¿En qué servicio de cerrajería puedo ayudarte?"; 
-        
-        const respuestaOrigen = "Bello Antioquia, Medellín Colombia."; 
-        const respuestaContacto = `**¡Comunícate de inmediato!** Llama o escribe directamente al técnico **Alexander** por **WhatsApp** al número: **${NUMERO_MOVIL}**. Ofrecemos **apertura de puertas/carros, cambio de clave y servicios a domicilio**.`;
-        const respuestaAperturaCarro = `La apertura de carro vale **70.000 COP** con domicilio. Si su carro es un modelo más optimizado (nuevo o con seguridad especial), es mejor enviar una foto o comunicarse directamente con el técnico vía **WhatsApp al ${NUMERO_MOVIL}**.`;
-        const respuestaAperturaPuerta = `La apertura de puerta tiene un costo de **70.000 COP** (Setenta mil pesos colombianos) con domicilio incluido, **siempre y cuando la puerta no tenga doble pasador** (cierre de seguridad adicional). Por favor, para agilizar el servicio, comunícate por **WhatsApp (${NUMERO_MOVIL})**.`;
-        const respuestaPrecios = `El cambio de clave de chapa (**de alcoba o de puerta principal**) cuando está con tornillos vale **45.000 COP**. Si la chapa tiene soldadura, el costo total es de **60.000 COP** (incluye cambio de clave y reinstalación).`;
-        const respuestaSoldaduraDetallada = `El cambio de clave con soldadura funciona así: la chapa tiene dos puntos de soldadura en lugar de tornillos. Al quitar esos puntos para hacer el cambio de clave, la chapa debe volver a instalarse y ponerse con sus tornillos. El costo total es de **60.000 COP** (Setenta mil pesos colombianos).`;
-        const respuestaOcupadoProactivo = `**Sí, ofrecemos el servicio de cerrajería a domicilio** (apertura de puertas, carros y cambio de clave). Para verificar la **disponibilidad inmediata**, por favor, envía tu solicitud y ubicación por **WhatsApp al ${NUMERO_MOVIL}**. Te contactaremos inmediatamente.`; 
-        const respuestaTiempo = `El trabajo actual de cerrajería está casi finalizado. Por favor, deja tu mensaje por WhatsApp (${NUMERO_MOVIL}) y te aseguro que la devolución de llamada será en pocos minutos.`;
-        const respuestaHipHopGeneral = "¡El Hip Hop es la voz de la calle y una cultura poderosa! Se basa en cuatro elementos principales: **MCing (rap), DJing, Graffiti y Breakdance**. ¿Quieres saber sobre un artista o un elemento en específico?";
-        const respuestaHipHopArtista = "Esa es una gran elección. Pero recuerda que este es un servicio de cerrajería urgente. ¿Necesitas abrir una puerta o un carro? Si tu problema es de llaves, comunícate al **WhatsApp (${NUMERO_MOVIL})**.";
-        const respuestaDefault = `Disculpa, no entendí tu pregunta. Por favor, sé más específico sobre tu problema de **cerrajería a domicilio** (apertura/cambio de clave) y comunícate por **WhatsApp (${NUMERO_MOVIL})** para una respuesta más rápida.`;
-
-        // RESPUESTA AÑADIDA PARA 'LLAVES DE LA CASA' - USA LA UBICACIÓN ACTUALIZADA
-        const respuestaUbicacionCasa = `El negocio **"Llaves de la Casa"** está ubicado en **${UBICACION_LLAVES_CASA}**. El número de contacto es **${TELEFONO_LLAVES_CASA}**. Recuerda que este *chatbot* está principalmente enfocado en servicios de cerrajería **a domicilio**.`;
-        // FIN RESPUESTA AÑADIDA
-        
-        // Mensaje de Bienvenida
-        const mensajeInicial = respuestaSaludo;
-
-
-        // --- LÓGICA CENTRAL DEL CHATBOT ---
-
+        // --- Lógica de interfaz y control de mensajes ---
         function enviarMensaje() {
             const userInput = document.getElementById('userInput');
             const userText = userInput.value;
             
             if (!userText.trim()) return;
             
-            // OPTIMIZACIÓN: Cancela la voz anterior al enviar un nuevo mensaje (reduce lag)
-            if (speechEnabled) window.speechSynthesis.cancel(); 
-
+            window.speechSynthesis.cancel(); 
+            window.clearTimeout(visemaTimeout);
+            
+            // 1. Mostrar el mensaje del usuario
             mostrarMensaje(userText, 'user-message');
-            
-            // >> EVENTO GA4: Mensaje enviado
-            if (typeof gtag === 'function') {
-                gtag('event', 'chat_message_sent', {
-                    'message_length': userText.length,
-                    'user_input_preview': userText.substring(0, 50)
-                });
-            }
-
-            setTimeout(() => {
-                const botResponse = obtenerRespuesta(userText);
-                mostrarMensaje(botResponse, 'bot-message');
-                // La función hablar() internamente verifica si isVoiceActive es true
-                hablar(botResponse); 
-            }, 500);
-
             userInput.value = '';
+            
+            // 2. Iniciar procesamiento (Ojos: "computarizado" - cian)
+            isProcessing = true;
+            eyeLeft.className = 'robot-eye processing';
+            eyeRight.className = 'robot-eye processing';
+            
+            if(mouth) mouth.style.transitionDuration = '0.03s'; 
+            mouth.className = 'robot-mouth visema-silence'; 
+
+            // 3. Simular tiempo de respuesta (500ms)
+            setTimeout(() => {
+                const responseData = obtenerRespuesta(userText);
+                
+                // Mostrar la respuesta del bot en el chat box
+                mostrarMensaje(responseData.respuesta, 'bot-message'); 
+                
+                // 4. Hablar la respuesta y activar la sincronización
+                hablar(responseData.respuesta, responseData.tono); 
+                
+                // 5. Detener procesamiento (onend del habla o !isVoiceActive se encargan de reestablecer ojos/boca)
+                isProcessing = false;
+                
+                if (!isVoiceActive) {
+                    // Si la voz está apagada, restablecer al estado de espera
+                    if (document.getElementById('userInput') === document.activeElement) {
+                        eyeLeft.className = 'robot-eye info'; 
+                        eyeRight.className = 'robot-eye info';
+                    } else {
+                        eyeLeft.className = 'robot-eye pulsing';
+                        eyeRight.className = 'robot-eye pulsing';
+                    }
+                    
+                    if(mouth) mouth.style.transitionDuration = '0.03s';
+                    mouth.className = 'robot-mouth visema-silence';
+                }
+            }, 500);
         }
 
-        // FUNCIÓN CENTRAL CON EVENTOS GA4 INTEGRADOS
-        function obtenerRespuesta(userText) {
-            const textoNormalizado = normalizarParaComparar(userText);
-            const textoSinEspacios = normalizarParaComparar(userText.replace(/\s/g, '').replace(' ', '')); 
-
-            // Función de ayuda para enviar el evento a GA4
-            const enviarIntencion = (nombre) => {
-                if (typeof gtag === 'function') {
-                    gtag('event', 'chatbot_intent', {'intent_name': nombre});
-                }
-            };
-
-            
-            // 0. MÁXIMA PRIORIDAD: UBICACIÓN LLAVES DE LA CASA 
-            for (const clave of palabrasClaveUbicacionCasa) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('ubicacion_llaves_casa'); 
-                    return respuestaUbicacionCasa; 
-                }
-            }
-
-
-            // 1. PRIORIDAD: SALUDOS / ESTADO
-            for (const clave of palabrasClaveSaludos) {
-                if (textoNormalizado.includes(clave) || textoSinEspacios.includes(clave.replace(/\s/g, ''))) {
-                    enviarIntencion('saludo'); 
-                    return respuestaSaludo; 
-                }
-            }
-            for (const clave of palabrasClaveEstado) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('estado');
-                    return respuestaEstado; 
-                }
-            }
-
-            // 1.1. ALTA PRIORIDAD: VENTA/CREACIÓN DE CHATBOTS
-            for (const clave of palabrasClaveVentaChatbot) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('interes_venta_chatbot'); 
-                    return respuestaVentaChatbot; 
-                }
-            }
-            
-            // 1.6 PRIORIDAD: ORIGEN ESPECÍFICO
-            for (const clave of palabrasClaveOrigen) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('origen_bot'); 
-                    return respuestaOrigen; 
-                }
-            }
-            
-            // 2. PRIORIDAD: IDENTIDAD
-            // A) PREGUNTA POR EL CREADOR
-            for (const clave of palabrasClaveCreador) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('creador_bot'); 
-                    return respuestaCreador; 
-                }
-            }
-            
-            // B) PREGUNTA GENERAL DE IDENTIDAD
-            for (const clave of palabrasClaveIdentidad) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('identidad_bot'); 
-                    return respuestaIdentidad; 
-                }
-            }
-
-            // 3. PRIORIDAD: HIP HOP (Redirige)
-            let esPreguntaDeHipHop = false;
-            for (const clave of palabrasClaveHipHop) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('interes_hiphop_general');
-                    return respuestaHipHopGeneral; 
-                }
-            }
-            for (const clave of palabrasClaveArtistasHipHop) {
-                if (textoNormalizado.includes(clave)) {
-                    esPreguntaDeHipHop = true; 
-                    break;
-                }
-            }
-            if (esPreguntaDeHipHop) {
-                enviarIntencion('interes_hiphop_artista');
-                return respuestaHipHopArtista;
-            }
-
-
-            // 4. PRIORIDAD: CONTACTO/NÚMERO/URGENCIA (¡El evento más importante!)
-            for (const clave of palabrasClaveContacto) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('contacto_urgente'); 
-                    return respuestaContacto; 
-                }
-            }
-            
-            // 5. MÁXIMA PRIORIDAD: APERTURA DE CARRO
-            for (const clave of palabrasClaveAperturaCarro) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('apertura_carro'); 
-                    return respuestaAperturaCarro; 
-                }
-            }
-            
-            // 6. ALTA PRIORIDAD: APERTURA DE PUERTA (Hogar/Alcoba)
-            for (const clave of palabrasClaveAperturaHogar) {
-                if (textoNormalizado.includes(clave)) {
-                    enviarIntencion('apertura_hogar'); 
-                    return respuestaAperturaPuerta; 
-                }
-            }
-            
-            // 7. PRIORIDAD MEDIA: PROCESO DE SOLDADURA (Detalle)
-            if (textoNormalizado.includes("soldadura") && (textoNormalizado.includes("cambio de clave") || textoNormalizado.includes("como es") || textoNormalizado.includes("proceso"))) {
-                 enviarIntencion('precio_o_cambio_clave'); 
-                return respuestaSoldaduraDetallada; 
-            }
-            
-            // 8. & 9. PRIORIDAD MEDIA: CAMBIO DE CLAVE / PRECIOS ESPECÍFICOS/GENÉRICOS
-            let esPreguntaDeCambioClave = false;
-            for (const clave of palabrasClaveCambioClave) {
-                if (textoNormalizado.includes(clave)) {
-                    esPreguntaDeCambioClave = true; 
-                    break;
-                }
-            }
-            let esPreguntaDePrecioGenerico = false;
-            for (const clave of palabrasClavePrecios) {
-                if (textoNormalizado.includes(clave)) {
-                    esPreguntaDePrecioGenerico = true; 
-                    break;
-                }
-            }
-            if (esPreguntaDeCambioClave || esPreguntaDePrecioGenerico) {
-                enviarIntencion('precio_o_cambio_clave'); 
-                return respuestaPrecios; 
-            }
-
-            // 10. PRIORIDAD: TIEMPO/DURACIÓN 
-            for (const clave of palabrasClaveTiempo) {
-                if (textoNormalizado.includes(clave) || textoNormalizado.includes("termina") || textoNormalizado.includes("desocupa")) {
-                    enviarIntencion('pregunta_tiempo'); 
-                    return respuestaTiempo; 
-                }
-            }
-
-            // 11. PRIORIDAD BAJA: DISPONIBILIDAD O SOLICITUD DE SERVICIO 
-            let preguntaPorDisponibilidad = false;
-            let esSolicitudServicio = false;
-            for (const clave of palabrasClaveDisponibilidad) {
-                if (textoNormalizado.includes(clave)) {
-                    preguntaPorDisponibilidad = true;
-                    break;
-                }
-            }
-            for (const clave of palabrasClaveServicio) {
-                if (textoNormalizado.includes(clave)) {
-                    esSolicitudServicio = true;
-                    break;
-                }
-            }
-            
-            if (preguntaPorDisponibilidad || esSolicitudServicio) {
-                enviarIntencion('disponibilidad_o_servicio_general');
-                return respuestaOcupadoProactivo; 
-            }
-            
-            // 12. RESPUESTA POR DEFECTO
-            enviarIntencion('desconocido'); 
-            return respuestaDefault;
-        }
-
-
-        // FUNCIONES DE INTERFAZ DE USUARIO (UI)
         function mostrarMensaje(mensaje, tipo) {
             const chatBox = document.getElementById('chatBox');
+            
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', tipo);
-            messageElement.innerHTML = mensaje; 
+            
+            // *** MANTENER MODIFICACIÓN CLAVE AQUÍ: No renderizar texto del bot ***
+            if (tipo === 'bot-message') {
+                messageElement.innerHTML = ''; // CADENA VACÍA
+                messageElement.style.minHeight = '1.2em'; // Aseguramos que la burbuja se muestre, aunque vacía
+            } else {
+                // Renderizar negritas para los mensajes del usuario
+                messageElement.innerHTML = mensaje.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+            }
+            
             chatBox.appendChild(messageElement);
 
-            chatBox.scrollTop = chatBox.scrollHeight;
+            setTimeout(() => {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 100);
         }
 
-        // Permite enviar mensaje al presionar Enter (Función solicitada)
+        // Eventos de usuario
         document.getElementById('userInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 enviarMensaje();
             }
         });
 
-        // Mensaje de bienvenida inicial y chequeo de compatibilidad
-        window.onload = () => {
-            if (!recognitionEnabled) {
-                 console.warn("Reconocimiento de voz (micrófono) deshabilitado por el navegador o el entorno.");
-            } 
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            getDomElements(); 
             
-            if (!speechEnabled) {
-                 console.warn("Síntesis de voz (hablar) deshabilitada por el navegador o el entorno.");
-            }
+            // 1. Inicializar el ciclo de colores
+            cycleColors(); 
+
+            // 2. Animación de entrada de tarjetas
+            document.getElementById('animated-title').classList.add('active'); 
+            // Solo queda la tarjeta del chatbot para animar
+            const chatbotCard = document.getElementById('ad-3-chatbot');
             
-            // Solo muestra el mensaje, la función hablar() se activa con la primera interacción del usuario.
-            mostrarMensaje(mensajeInicial, 'bot-message'); 
-        }
+            setTimeout(() => { 
+                chatbotCard.classList.add('active'); 
+            }, 900); // Se mantiene el primer delay para la animación
+
+            // 3. Lógica del robot después de la animación
+            setTimeout(() => { 
+                if(eyeLeft && eyeRight) {
+                    eyeLeft.className = 'robot-eye pulsing'; 
+                    eyeRight.className = 'robot-eye pulsing';
+                    mouth.className = 'robot-mouth visema-silence'; 
+                    startEyeMovement(); 
+                    startEyeBlinking(); // Asegura que el parpadeo inicie
+                }
+            }, 1000); 
+
+        });
     </script>
 </body>
 </html>
