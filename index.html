@@ -3,334 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente Digital de Cerrajería - Neón Cyberpunk (V5.11 - Marquee Inferior)</title>
+    <title>Cerrajería Llaves - Avatar Sincronizado</title>
     
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYYYEKQYGJ"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-PYYYEKQYGJ');
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        html { font-family: 'Inter', 'Orbitron', sans-serif; }
-        body { background-color: transparent; } 
-        .ad-card { transform: translateX(-150%); transition: transform 1.0s ease-out; min-height: 80px; }
-        .ad-card.active { transform: translateX(0); }
-        .header-animated { transform: translateX(-100%); transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); display: inline-block; }
-        .header-animated.active { transform: translateX(0); }
-        
-        .title-neon-glitch { 
-            font-family: 'Orbitron', sans-serif; 
-            color: var(--color-cian-neon);
-            font-size: 2.25rem; 
-            font-weight: 900; 
-            text-shadow: 0 0 5px var(--color-cian-neon), 0 0 15px var(--color-cian-neon), 0 0 30px rgba(0, 240, 255, 0.8), 2px 2px 0 #005663; 
-            letter-spacing: 5px; 
-            animation: glitch-sutil 5s infinite linear alternate-reverse;
+        :root {
+            --color-cian-neon: #00f0ff;
+            --color-principal: #00FFFF;
         }
-        @media (min-width: 640px) { .title-neon-glitch { font-size: 4rem; letter-spacing: 7px; } }
-        
-        @keyframes glitch-sutil { 
-            0% { text-shadow: 0 0 5px var(--color-cian-neon), 0 0 15px var(--color-cian-neon); transform: translate(0, 0); } 
-            5% { text-shadow: 0 0 5px var(--color-principal), 0 0 15px var(--color-principal); transform: translate(-1px, 1px); } 
-            10% { text-shadow: 0 0 5px var(--color-cian-neon), 0 0 15px var(--color-cian-neon); transform: translate(1px, -1px); } 
-            15% { transform: translate(0, 0); } 
-            100% { transform: translate(0, 0); } 
-        }
-        
+        html { font-family: 'Orbitron', sans-serif; }
+        body { background-color: transparent; margin: 0; padding: 10px; }
+
         .chatbot-container { 
-            position: relative; 
-            height: 280px; 
-            display: flex; 
-            flex-direction: column; 
-            background-color: #2c2c54; 
-            border-radius: 15px 15px 30px 30px; 
-            overflow: hidden; 
-            z-index: 1; 
-            padding-top: 40px; 
-            padding-bottom: 30px; 
-        }
-        .chatbot-container header { 
-            background-color: transparent; 
-            position: absolute; 
-            top: 0; left: 0; right: 0; height: 40px; z-index: 5; 
-        }
-        .ia-model-label { position: absolute; top: 5px; right: 8px; font-size: 0.7rem; color: #aaa; }
-        #toggleVoice { position: absolute; top: 5px; left: 8px; font-size: 0.7rem; color: white; background: #444; padding: 2px 5px; border-radius: 5px; }
-
-        .marquee-container {
-            display: block;
-            position: absolute;
-            bottom: 0px; left: 0; right: 0;
-            height: 30px; overflow: hidden; 
-            background-color: #111122; 
-            border-top: 2px solid #FF00FF; 
-            z-index: 10; 
+            position: relative; height: 320px; display: flex; flex-direction: column; 
+            background-color: #2c2c54; border-radius: 20px; overflow: hidden; 
+            padding-top: 50px; padding-bottom: 40px; border: 2px solid var(--color-cian-neon);
         }
 
-        .marquee-text {
-            display: inline-block;
-            white-space: nowrap;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9em; font-weight: 700;
-            color: #FF00FF; 
-            padding-left: 100%; 
-            text-shadow: 0 0 5px #FF00FF, 0 0 15px rgba(255, 0, 255, 0.8); 
-            animation: marquee-scroll 15s linear infinite;
-            line-height: 30px; 
+        /* Avatar */
+        .robot-head {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 140px; height: 140px; border-radius: 50%; background: #1a1a2e;
+            border: 2px solid var(--color-cian-neon); z-index: 5;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         }
-
-        @keyframes marquee-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); } 
-        }
-
-        .robot-head-mask { 
-            position: absolute; 
-            top: 15px; left: 50%; transform: translateX(-50%); 
-            width: 150px; height: 150px; border-radius: 50%; 
-            background-color: #1a1a2e; 
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4), 0 0 30px var(--color-sombra-secundaria); 
-            border: 2px solid var(--color-cian-neon); 
-            z-index: 8; 
-        }
-        
         .robot-eyes { 
-            position: absolute; top: 35px; left: 50%; transform: translateX(-50%); 
-            display: flex; gap: 25px; z-index: 10; 
+            position: absolute; top: 40px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 20px; z-index: 10; 
         }
-        .robot-eye { width: 20px; height: 45px; border-radius: 5px; } 
-        
+        .robot-eye { 
+            width: 18px; height: 40px; border-radius: 4px; background: var(--color-cian-neon);
+            transition: all 0.3s ease;
+        }
         .robot-mouth {
-            position: absolute; top: 105px; left: 50%; transform: translateX(-50%) scaleY(0.5); 
-            width: 50px; height: 5px; background-color: var(--color-cian-neon); border-radius: 2px;
-            box-shadow: 0 0 5px var(--color-cian-neon), 0 0 10px rgba(0, 240, 255, 0.7);
-            z-index: 9; transition: transform 0.03s ease-out, box-shadow 0.03s ease-out; 
-        }
-        
-        .robot-eye.pulsing { background-color: var(--color-principal); animation: neon-pulse 2s infinite alternate-reverse; }
-        @keyframes neon-pulse { 
-            0% { box-shadow: 0 0 8px var(--color-principal), 0 0 15px var(--color-sombra-principal); } 
-            100% { box-shadow: 0 0 12px var(--color-principal), 0 0 25px var(--color-sombra-principal-fuerte); } 
+            position: absolute; top: 100px; left: 50%; transform: translateX(-50%); 
+            width: 45px; height: 4px; background: var(--color-cian-neon);
+            border-radius: 10px; z-index: 10; transition: transform 0.08s ease-out;
         }
 
-        .robot-eye.speaking-eyes { background-color: #00FF00; animation: neon-pulse-green 1.5s infinite alternate-reverse; }
-        @keyframes neon-pulse-green { 0% { box-shadow: 0 0 8px #00FF00; } 100% { box-shadow: 0 0 12px #00FF00; } }
-        .robot-eye.alert { background-color: #FF0000; animation: neon-pulse-red 0.5s infinite alternate-reverse; }
-        @keyframes neon-pulse-red { 0% { box-shadow: 0 0 10px #FF0000; } 100% { box-shadow: 0 0 20px #FF0000; } }
-        .robot-eye.processing { background-color: #00f0ff; animation: processing-flicker 0.1s infinite alternate; }
-        @keyframes processing-flicker { 0% { opacity: 1; } 100% { opacity: 0.8; } }
-        .robot-eye.blink { transform: scaleY(0.1) !important; box-shadow: none !important; transition: transform 0.05s ease-out !important; }
-        
+        /* Estados de Animación */
+        .eye-pulsing { animation: pulse 2s infinite alternate; }
+        @keyframes pulse { 
+            0% { box-shadow: 0 0 5px var(--color-principal); opacity: 0.7; }
+            100% { box-shadow: 0 0 15px var(--color-principal); opacity: 1; }
+        }
+        .eye-talking { background: #00FF00 !important; box-shadow: 0 0 15px #00FF00; }
+        .blink { transform: scaleY(0.1); }
+
         /* Visemas */
-        .robot-mouth.visema-A { transform: translateX(-50%) scaleY(6.5) scaleX(1.4); } 
-        .robot-mouth.visema-E { transform: translateX(-50%) scaleY(4.5) scaleX(1.1); } 
-        .robot-mouth.visema-I { transform: translateX(-50%) scaleY(2.0) scaleX(0.7); } 
-        .robot-mouth.visema-O { transform: translateX(-50%) scaleY(5.5) scaleX(1.2); } 
-        .robot-mouth.visema-U { transform: translateX(-50%) scaleY(5.0) scaleX(1.0); } 
-        .robot-mouth.visema-closed { transform: translateX(-50%) scaleY(0.5) scaleX(1.0); } 
-        .robot-mouth.visema-neutral { transform: translateX(-50%) scaleY(2.5) scaleX(1.1); } 
-        .robot-mouth.visema-silence { transform: translateX(-50%) scaleY(0.2) scaleX(0.8); } 
+        .v-A { transform: translateX(-50%) scaleY(6) scaleX(1.3); }
+        .v-E { transform: translateX(-50%) scaleY(4) scaleX(1.1); }
+        .v-I { transform: translateX(-50%) scaleY(2) scaleX(0.8); }
+        .v-O { transform: translateX(-50%) scaleY(5) scaleX(1.2); }
+        .v-U { transform: translateX(-50%) scaleY(4.5) scaleX(1); }
+        .v-silence { transform: translateX(-50%) scaleY(1) scaleX(1); }
+
+        /* Interfaz */
+        .chat-box { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { font-size: 0.8rem; padding: 6px 12px; border-radius: 10px; max-width: 80%; }
+        .bot { background: #3f3f6e; color: var(--color-cian-neon); border: 1px solid var(--color-cian-neon); align-self: flex-start; }
+        .user { background: #4a90e2; color: white; align-self: flex-end; }
         
-        .chat-box { flex-grow: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; background-color: transparent; }
-        .input-container { display: flex; padding: 8px; border-top: none; flex-shrink: 0; }
-        .message { padding: 6px 10px; border-radius: 12px; max-width: 85%; font-size: 0.8em; }
-        .user-message { align-self: flex-end; background-color: #4a90e2; color: white; }
-        .bot-message { align-self: flex-start; background-color: #3f3f6e; color: var(--color-cian-neon); border: 1px solid var(--color-cian-neon);} 
-        #userInput { flex-grow: 1; padding: 6px; border-radius: 15px; font-size: 0.85em; background-color: #3f3f6e; color: var(--color-cian-neon); border: 1px solid var(--color-cian-neon); }
-        
-        #micButton { flex-shrink: 0; background-color: var(--color-principal); color: #1a1a2e; padding: 6px 8px; border-radius: 15px; margin-right: 5px; }
-        .action-buttons button { background-color: var(--color-principal); color: #1a1a2e; font-weight: bold; border-radius: 15px; padding: 6px 10px; cursor: pointer; border: none; }
+        .input-area { display: flex; padding: 10px; gap: 5px; background: #111122; }
+        #userInput { flex-grow: 1; background: #2c2c54; border: 1px solid var(--color-cian-neon); color: white; border-radius: 20px; padding: 5px 15px; outline: none; }
+        .btn { background: var(--color-cian-neon); color: #111122; font-weight: bold; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+
+        .marquee { position: absolute; bottom: 0; width: 100%; background: #000; color: #FF00FF; font-size: 0.7rem; padding: 2px 0; border-top: 1px solid #FF00FF; }
     </style>
 </head>
-<body class="min-h-screen p-2"> 
+<body>
 
-    <div class="max-w-4xl mx-auto">
-        <header id="header-title" class="mb-6 overflow-hidden text-center">
-            <h1 id="animated-title" class="header-animated title-neon-glitch">
-                🔑 Servicio Técnico de Cerrajería
-            </h1>
-        </header>
+    <div class="chatbot-container">
+        <div class="robot-head"></div>
+        <div class="robot-eyes">
+            <div id="eye-l" class="robot-eye eye-pulsing"></div>
+            <div id="eye-r" class="robot-eye eye-pulsing"></div>
+        </div>
+        <div id="mouth" class="robot-mouth"></div>
 
-        <section id="ads-container">
-            <div id="ad-3-chatbot" class="ad-card rounded-xl shadow-2xl p-2 border-l-4 border-cyan-500">
-                <div class="chatbot-container">
-                    <div class="robot-head-mask"></div>
-                    <div class="robot-eyes">
-                        <div id="robot-eye-left" class="robot-eye"></div>
-                        <div id="robot-eye-right" class="robot-eye"></div>
-                    </div>
-                    <div id="robot-mouth" class="robot-mouth visema-silence"></div> 
-                    
-                    <header>
-                        <div class="ia-model-label">Cerrajería Llaves V5.11</div>
-                        <button id="toggleVoice" onclick="toggleVoiceOutput()">🔊 Voz: ON</button>
-                    </header>
-            
-                    <div class="chat-box" id="chatBox"></div>
-            
-                    <div id="development-marquee" class="marquee-container">
-                        <span class="marquee-text">
-                            *** SOPORTE TÉCNICO 24/7 *** // CAMBIO DE CLAVES $45.000 // LLÁMANOS AL 304 465 4556 // ***
-                        </span>
-                    </div>
-                    <div class="input-container">
-                        <input type="text" id="userInput" placeholder="Pregunta por precios o servicios..." autofocus>
-                        <div class="action-buttons">
-                            <button id="micButton" onclick="iniciarReconocimiento()">🎙️</button>
-                            <button onclick="enviarMensaje()">Enviar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="chat-box" id="chatBox">
+            <div class="msg bot">¡Hola! Soy tu asistente de cerrajería. ¿En qué puedo ayudarte?</div>
+        </div>
+
+        <div class="marquee">
+            <marquee>*** SERVICIO DE CERRAJERÍA LLAVES - CAMBIO DE CLAVE: $45.000 - TEL: 304 465 4556 ***</marquee>
+        </div>
+
+        <div class="input-area">
+            <button class="btn" onclick="startVoice()">🎙️</button>
+            <input type="text" id="userInput" placeholder="Escribe aquí...">
+            <button class="btn" onclick="sendMessage()">OK</button>
+        </div>
     </div>
 
     <script>
-        const NUMERO_MOVIL = "304 465 4556";
-        const COLOR_PALETTE = ['#00FFFF', '#00BFFF', '#00FF88'];
-        const CIAN_NEON_FIJO = '#00f0ff';
-        let colorIndex = 0;
-        let rootStyle;
-        let isTyping = false, isProcessing = false, isListening = false, isVoiceActive = true;
-        let eyeLeft, eyeRight, mouth, visemaTimeout;
+        const mouth = document.getElementById('mouth');
+        const eyes = [document.getElementById('eye-l'), document.getElementById('eye-r')];
+        const chatBox = document.getElementById('chatBox');
+        let visemaInterval;
 
-        const VISEMA_MAP = {'A': 'visema-A', 'E': 'visema-E', 'I': 'visema-I', 'O': 'visema-O', 'U': 'visema-U', 'closed': 'visema-closed', 'neutral': 'visema-neutral', 'silence': 'visema-silence'};
-        const VISEMA_GROUPS = {'A': 'A', 'E': 'E', 'I': 'I', 'O': 'O', 'U': 'U', 'M': 'closed', 'P': 'closed', 'B': 'closed', 'F': 'closed', '0': 'O', '1': 'I', '2': 'U', '3': 'E', '4': 'A', '5': 'I', '6': 'E', '7': 'E', '8': 'O', '9': 'E'};
+        const VISEMA_MAP = {
+            'A': 'v-A', 'E': 'v-E', 'I': 'v-I', 'O': 'v-O', 'U': 'v-U',
+            'B': 'v-silence', 'M': 'v-silence', 'P': 'v-silence',
+            'R': 'v-U', 'S': 'v-I', 'T': 'v-I'
+        };
 
-        function setMainColor(colorHex) {
-            rootStyle.setProperty('--color-principal', colorHex);
-            rootStyle.setProperty('--color-sombra-principal', 'rgba(0,255,255,0.5)');
-            rootStyle.setProperty('--color-sombra-principal-fuerte', 'rgba(0,255,255,1)');
-            document.getElementById('micButton').style.backgroundColor = colorHex;
-        }
+        function syncMouth(text) {
+            clearInterval(visemaInterval);
+            let chars = text.toUpperCase().replace(/[^A-Z0-9]/g, '').split('');
+            let i = 0;
 
-        function cycleColors() {
-            colorIndex = (colorIndex + 1) % COLOR_PALETTE.length;
-            setMainColor(COLOR_PALETTE[colorIndex]);
-            setTimeout(cycleColors, 8000); 
-        }
-
-        function simulateVisemes(text) {
-            window.clearTimeout(visemaTimeout);
-            if (!window.speechSynthesis.speaking || !isVoiceActive) {
-                mouth.className = 'robot-mouth visema-silence';
-                return;
-            }
-            let cleanedText = text.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            let index = 0;
-            const animate = () => {
-                if (!window.speechSynthesis.speaking || index >= cleanedText.length) {
-                    mouth.className = 'robot-mouth visema-silence';
+            visemaInterval = setInterval(() => {
+                if (i >= chars.length || !window.speechSynthesis.speaking) {
+                    stopSpeaking();
                     return;
                 }
-                let char = cleanedText[index++];
-                mouth.className = 'robot-mouth ' + (VISEMA_MAP[VISEMA_GROUPS[char]] || 'visema-neutral');
-                visemaTimeout = setTimeout(animate, 75);
-            };
-            animate();
+                const char = chars[i];
+                mouth.className = 'robot-mouth ' + (VISEMA_MAP[char] || 'v-I');
+                i++;
+            }, 75); // Velocidad de habla sincronizada
         }
 
-        function hablar(texto, tone) {
-            if (!isVoiceActive) return;
+        function stopSpeaking() {
+            clearInterval(visemaInterval);
+            mouth.className = 'robot-mouth v-silence';
+            eyes.forEach(e => e.classList.remove('eye-talking'));
+        }
+
+        function speak(text) {
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(texto);
-            utterance.lang = 'es-ES';
-            utterance.onstart = () => {
-                eyeLeft.className = 'robot-eye speaking-eyes';
-                eyeRight.className = 'robot-eye speaking-eyes';
-                simulateVisemes(texto);
+            const ut = new SpeechSynthesisUtterance(text);
+            ut.lang = 'es-ES';
+            ut.rate = 1.0;
+
+            ut.onstart = () => {
+                eyes.forEach(e => e.classList.add('eye-talking'));
+                syncMouth(text);
             };
-            utterance.onend = () => {
-                eyeLeft.className = 'robot-eye pulsing';
-                eyeRight.className = 'robot-eye pulsing';
-                mouth.className = 'robot-mouth visema-silence';
-            };
-            window.speechSynthesis.speak(utterance);
+
+            ut.onend = () => stopSpeaking();
+            window.speechSynthesis.speak(ut);
         }
 
-        function obtenerRespuesta(userText) {
-            const t = userText.toLowerCase();
-            if (t.includes("clave") || t.includes("cambio")) {
-                return { respuesta: "El servicio de cambio de clave para su cerradura tiene un valor de 45.000 pesos. ¿Desea agendar un técnico?", tono: 'NEUTRO' };
-            }
-            if (t.includes("precio") || t.includes("cuanto cuesta")) {
-                return { respuesta: "Nuestros servicios básicos empiezan desde los 45.000 pesos, como el cambio de clave o aperturas sencillas.", tono: 'INFO' };
-            }
-            if (t.includes("hola") || t.includes("buenos")) {
-                return { respuesta: "Hola, soy su asistente de cerrajería. ¿En qué puedo ayudarle hoy con sus llaves o cerraduras?", tono: 'NEUTRO' };
-            }
-            return { respuesta: "Entiendo su requerimiento. Para ese caso específico, el costo base es de 45.000 pesos. ¿Le gustaría que le envíe un cerrajero?", tono: 'NEUTRO' };
-        }
-
-        function enviarMensaje() {
+        function sendMessage() {
             const input = document.getElementById('userInput');
-            const text = input.value.trim();
-            if (!text) return;
-            
-            mostrarMensaje(text, 'user-message');
-            input.value = '';
-            
-            isProcessing = true;
-            eyeLeft.className = 'robot-eye processing';
-            eyeRight.className = 'robot-eye processing';
-
-            setTimeout(() => {
-                const res = obtenerRespuesta(text);
-                mostrarMensaje(res.respuesta, 'bot-message');
-                hablar(res.respuesta, res.tono);
-                isProcessing = false;
-            }, 600);
-        }
-
-        function mostrarMensaje(mensaje, tipo) {
-            const chatBox = document.getElementById('chatBox');
-            const div = document.createElement('div');
-            div.classList.add('message', tipo);
-            div.textContent = mensaje;
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function toggleVoiceOutput() {
-            isVoiceActive = !isVoiceActive;
-            document.getElementById('toggleVoice').textContent = isVoiceActive ? "🔊 Voz: ON" : "🔇 Voz: OFF";
-            if (!isVoiceActive) window.speechSynthesis.cancel();
-        }
-
-        function iniciarReconocimiento() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return alert("Navegador no compatible");
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-ES';
-            recognition.onstart = () => { isListening = true; document.getElementById('micButton').textContent = '🔴'; };
-            recognition.onresult = (e) => { document.getElementById('userInput').value = e.results[0][0].transcript; enviarMensaje(); };
-            recognition.onend = () => { isListening = false; document.getElementById('micButton').textContent = '🎙️'; };
-            recognition.start();
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            eyeLeft = document.getElementById('robot-eye-left');
-            eyeRight = document.getElementById('robot-eye-right');
-            mouth = document.getElementById('robot-mouth');
-            rootStyle = document.documentElement.style;
-            rootStyle.setProperty('--color-cian-neon', CIAN_NEON_FIJO);
-            
-            cycleColors();
-            document.getElementById('animated-title').classList.add('active');
-            setTimeout(() => document.getElementById('ad-3-chatbot').classList.add('active'), 500);
-            setTimeout(() => {
-                eyeLeft.className = 'robot-eye pulsing';
-                eyeRight.className = 'robot-eye pulsing';
-            }, 1000);
-        });
-
-        document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') enviarMensaje(); });
-    </script>
-</body>
-</html>
