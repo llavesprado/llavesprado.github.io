@@ -1,161 +1,185 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #1a1a2e;">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cerrajería Llaves - Sincronización Pro</title>
+    <title>Cerrajería Pro - Avatar Sincronizado</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --cian: #00f0ff; }
-        body { font-family: 'Orbitron', sans-serif; background: transparent; color: white; overflow: hidden; }
+        :root { --cian: #00f0ff; --negro: #1a1a2e; }
+        body { font-family: 'Orbitron', sans-serif; background: var(--negro); color: white; margin: 0; overflow: hidden; }
         
+        /* Contenedor Principal */
         .chatbot-container { 
-            position: relative; height: 380px; display: flex; flex-direction: column; 
-            background: #2c2c54; border-radius: 20px; border: 2px solid var(--cian);
-            box-shadow: 0 0 20px rgba(0,240,255,0.2); margin: 10px;
+            position: relative; height: 420px; max-width: 400px; margin: 20px auto;
+            background: #2c2c54; border-radius: 25px; border: 3px solid var(--cian);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3); display: flex; flex-direction: column;
         }
 
-        /* Avatar */
+        /* Avatar Rigging */
+        .avatar-zone { position: relative; height: 160px; background: #111122; border-radius: 22px 22px 0 0; }
         .robot-head {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            width: 120px; height: 120px; border-radius: 50%; background: #1a1a2e;
-            border: 2px solid var(--cian); z-index: 5;
+            width: 120px; height: 120px; border-radius: 50%; background: var(--negro);
+            border: 2px solid var(--cian); box-shadow: inset 0 0 15px var(--cian);
         }
-        .robot-eyes { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 10; }
-        .robot-eye { width: 14px; height: 35px; border-radius: 3px; background: var(--cian); transition: 0.1s; }
-        .robot-mouth {
-            position: absolute; top: 95px; left: 50%; transform: translateX(-50%); 
-            width: 40px; height: 4px; background: var(--cian);
-            border-radius: 10px; z-index: 10; transition: transform 0.1s ease-out;
+        .eyes-container { position: absolute; top: 45px; left: 50%; transform: translateX(-50%); display: flex; gap: 25px; }
+        .eye { width: 15px; height: 35px; background: var(--cian); border-radius: 4px; transition: 0.1s; }
+        .mouth {
+            position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+            width: 45px; height: 6px; background: var(--cian); border-radius: 10px;
+            transition: all 0.06s cubic-bezier(0.17, 0.67, 0.83, 0.67);
         }
 
-        /* Estados de Boca */
-        .mouth-open { transform: translateX(-50%) scaleY(6); }
-        .mouth-closed { transform: translateX(-50%) scaleY(1); }
+        /* Estados de la Boca (Visemas) */
+        .m-open { height: 35px; border-radius: 50%; transform: translateX(-50%) translateY(-15px); }
+        .m-mid { height: 15px; border-radius: 20px; transform: translateX(-50%) translateY(-5px); }
+        .m-flat { height: 4px; transform: translateX(-50%); }
 
-        .chat-box { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-top: 135px; }
-        .msg { font-size: 0.75rem; padding: 8px; border-radius: 10px; max-width: 85%; border: 1px solid rgba(0,240,255,0.2); }
-        .bot { background: #3f3f6e; align-self: flex-start; color: var(--cian); }
-        .user { background: #4a90e2; align-self: flex-end; color: white; }
+        /* Chat y Scroll */
+        .chat-display { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); }
+        .bubble { font-size: 0.75rem; padding: 8px 12px; border-radius: 15px; max-width: 85%; line-height: 1.4; }
+        .bot-msg { background: #3f3f6e; color: var(--cian); border: 1px solid var(--cian); align-self: flex-start; }
+        .user-msg { background: #4a90e2; color: white; align-self: flex-end; }
 
-        .input-area { display: flex; padding: 10px; background: #111122; gap: 5px; }
-        input { flex-grow: 1; background: #2c2c54; border: 1px solid var(--cian); border-radius: 10px; padding: 8px; color: white; font-size: 0.8rem; outline: none; }
-        button { background: var(--cian); color: #111122; font-weight: bold; padding: 8px 15px; border-radius: 10px; cursor: pointer; }
+        /* Controles */
+        .input-box { display: flex; padding: 10px; background: #111122; gap: 8px; }
+        input { flex-grow: 1; background: #1a1a2e; border: 1px solid var(--cian); border-radius: 10px; padding: 8px; color: white; outline: none; font-size: 0.8rem; }
+        button { background: var(--cian); color: #1a1a2e; font-weight: 900; padding: 8px 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        button:hover { filter: brightness(1.2); }
     </style>
 </head>
 <body>
 
-    <div class="chatbot-container">
-        <div class="robot-head"></div>
-        <div class="robot-eyes">
-            <div id="eye-l" class="robot-eye"></div>
-            <div id="eye-r" class="robot-eye"></div>
-        </div>
-        <div id="mouth" class="robot-mouth"></div>
-
-        <div class="chat-box" id="chatBox">
-            <div class="msg bot">Sistema iniciado. Pregúntame por el cambio de clave.</div>
-        </div>
-
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Escribe aquí...">
-            <button onclick="enviar()">ENVIAR</button>
+<div class="chatbot-container">
+    <div class="avatar-zone">
+        <div class="robot-head">
+            <div class="eyes-container">
+                <div id="el" class="eye"></div>
+                <div id="er" class="eye"></div>
+            </div>
+            <div id="mouth" class="mouth m-flat"></div>
         </div>
     </div>
 
-    <script>
-        const mouth = document.getElementById('mouth');
-        const eyes = [document.getElementById('eye-l'), document.getElementById('eye-r')];
-        const chatBox = document.getElementById('chatBox');
-        let mouthTimer;
+    <div class="chat-display" id="chatDisplay">
+        <div class="bubble bot-msg">¡Hola! Soy tu asistente de Cerrajería Llaves. Pregúntame lo que necesites.</div>
+    </div>
 
-        // Función de animación forzada por sílabas
-        function animarBoca(texto) {
-            clearTimeout(mouthTimer);
-            const palabras = texto.split(" ");
-            let tiempoAcumulado = 0;
+    <div class="input-box">
+        <input type="text" id="userInput" placeholder="Ej: Precio cambio de clave...">
+        <button onclick="procesar()">OK</button>
+    </div>
+</div>
 
-            palabras.forEach((palabra) => {
-                // Por cada palabra, abrimos y cerramos la boca según su longitud
-                const duracionPalabra = palabra.length * 80; // ms por letra aprox
-                
-                setTimeout(() => {
-                    if (window.speechSynthesis.speaking) {
-                        mouth.classList.add('mouth-open');
-                        eyes.forEach(e => e.style.background = '#00FF00');
-                    }
-                }, tiempoAcumulado);
+<script>
+    const mouth = document.getElementById('mouth');
+    const eyes = [document.getElementById('el'), document.getElementById('er')];
+    const display = document.getElementById('chatDisplay');
+    let lipSyncActive = false;
 
-                tiempoAcumulado += duracionPalabra * 0.6;
+    // MOTOR DE SINCRONIZACIÓN FONÉTICA
+    function animateLipSync(text) {
+        if (lipSyncActive) return;
+        lipSyncActive = true;
+        
+        // Limpiamos el texto para procesar solo sonidos
+        const cleanText = text.toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ0-9 ]/g, '');
+        const segments = cleanText.split('');
+        let delay = 0;
 
-                setTimeout(() => {
-                    mouth.classList.remove('mouth-open');
-                }, tiempoAcumulado);
-
-                tiempoAcumulado += duracionPalabra * 0.4;
-            });
-
-            // Asegurar cierre al final
+        segments.forEach((char, index) => {
             setTimeout(() => {
-                mouth.classList.remove('mouth-open');
-                eyes.forEach(e => e.style.background = '#00f0ff');
-            }, tiempoAcumulado + 500);
+                if (!window.speechSynthesis.speaking) {
+                    resetMouth();
+                    return;
+                }
+
+                // Lógica de apertura según fonema
+                if (['A', 'O', '0', '8'].includes(char)) {
+                    mouth.className = 'mouth m-open';
+                } else if (['E', 'I', 'U', '2', '3', '4', '5', '7', '9'].includes(char)) {
+                    mouth.className = 'mouth m-mid';
+                } else if (char === ' ') {
+                    mouth.className = 'mouth m-flat';
+                } else {
+                    // Consonantes (apertura leve)
+                    mouth.className = 'mouth m-mid';
+                }
+
+                // Si es el último caracter, cerramos
+                if (index === segments.length - 1) {
+                    setTimeout(resetMouth, 200);
+                }
+            }, delay);
+            
+            // Tiempo por caracter (ajustado a la velocidad del habla estándar)
+            delay += 75; 
+        });
+    }
+
+    function resetMouth() {
+        mouth.className = 'mouth m-flat';
+        lipSyncActive = false;
+        eyes.forEach(e => e.style.background = '#00f0ff');
+    }
+
+    function hablar(mensaje) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(mensaje);
+        msg.lang = 'es-ES';
+        msg.rate = 1.0;
+        
+        msg.onstart = () => {
+            eyes.forEach(e => e.style.background = '#00FF00');
+            animateLipSync(mensaje);
+        };
+        
+        msg.onend = resetMouth;
+        window.speechSynthesis.speak(msg);
+    }
+
+    function procesar() {
+        const input = document.getElementById('userInput');
+        const rawText = input.value.trim();
+        if (!rawText) return;
+
+        addMsg(rawText, 'user-msg');
+        input.value = '';
+
+        // LÓGICA DE NEGOCIO (PRECIOS)
+        let respuesta = "El costo de nuestros servicios de cerrajería, como el cambio de clave, es de 45.000 pesos.";
+        
+        const lower = rawText.toLowerCase();
+        if (lower.includes("clave") || lower.includes("precio") || lower.includes("cuanto cuesta")) {
+            respuesta = "El servicio de cambio de clave técnico tiene un valor exacto de 45.000 pesos. ¿Deseas agendar un cerrajero ahora?";
+        } else if (lower.includes("hola")) {
+            respuesta = "¡Hola! Bienvenido a Cerrajería Llaves. Te informo que hoy el cambio de clave cuesta 45.000 pesos. ¿En qué te puedo ayudar?";
         }
 
-        function hablar(texto) {
-            window.speechSynthesis.cancel();
-            const ut = new SpeechSynthesisUtterance(texto);
-            ut.lang = 'es-ES';
-            ut.rate = 1.0;
-            ut.pitch = 1.1;
+        setTimeout(() => {
+            addMsg(respuesta, 'bot-msg');
+            hablar(respuesta);
+        }, 400);
+    }
 
-            ut.onstart = () => animarBoca(texto);
-            ut.onend = () => {
-                mouth.classList.remove('mouth-open');
-                eyes.forEach(e => e.style.background = '#00f0ff');
-            };
+    function addMsg(txt, clase) {
+        const div = document.createElement('div');
+        div.className = `bubble ${clase}`;
+        div.textContent = txt;
+        display.appendChild(div);
+        display.scrollTop = display.scrollHeight;
+    }
 
-            window.speechSynthesis.speak(ut);
+    // Parpadeo automático natural
+    setInterval(() => {
+        if (!lipSyncActive) {
+            eyes.forEach(e => e.style.transform = 'scaleY(0.1)');
+            setTimeout(() => eyes.forEach(e => e.style.transform = 'scaleY(1)'), 150);
         }
+    }, 4000);
+</script>
 
-        function enviar() {
-            const input = document.getElementById('userInput');
-            const userText = input.value.trim().toLowerCase();
-            if (!userText) return;
-
-            addMsg(input.value, 'user');
-            input.value = '';
-
-            let respuesta = "Para ese servicio técnico, el costo base es de 45.000 pesos. ¿Te gustaría agendarlo?";
-
-            if (userText.includes("clave") || userText.includes("precio") || userText.includes("cuanto cuesta")) {
-                respuesta = "El cambio de clave para tu cerradura tiene un valor de 45.000 pesos netos. Incluye garantía técnica.";
-            } else if (userText.includes("hola")) {
-                respuesta = "¡Hola! Soy tu asistente de Cerrajería Llaves. El cambio de clave hoy está en 45.000 pesos. ¿Cómo puedo ayudarte?";
-            }
-
-            setTimeout(() => {
-                addMsg(respuesta, 'bot');
-                hablar(respuesta);
-            }, 300);
-        }
-
-        function addMsg(txt, tipo) {
-            const d = document.createElement('div');
-            d.className = `msg ${tipo}`;
-            d.textContent = txt;
-            chatBox.appendChild(d);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Parpadeo automático cada 4 segundos
-        setInterval(() => {
-            if (!window.speechSynthesis.speaking) {
-                eyes.forEach(e => e.style.transform = 'scaleY(0.1)');
-                setTimeout(() => eyes.forEach(e => e.style.transform = 'scaleY(1)'), 150);
-            }
-        }, 4000);
-    </script>
 </body>
 </html>
