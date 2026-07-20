@@ -2,184 +2,319 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cerrajería Pro - Avatar Sincronizado</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Orión: Llave Exacta 1:1</title>
     <style>
-        :root { --cian: #00f0ff; --negro: #1a1a2e; }
-        body { font-family: 'Orbitron', sans-serif; background: var(--negro); color: white; margin: 0; overflow: hidden; }
-        
-        /* Contenedor Principal */
-        .chatbot-container { 
-            position: relative; height: 420px; max-width: 400px; margin: 20px auto;
-            background: #2c2c54; border-radius: 25px; border: 3px solid var(--cian);
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3); display: flex; flex-direction: column;
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #000; 
+            touch-action: none; 
         }
-
-        /* Avatar Rigging */
-        .avatar-zone { position: relative; height: 160px; background: #111122; border-radius: 22px 22px 0 0; }
-        .robot-head {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            width: 120px; height: 120px; border-radius: 50%; background: var(--negro);
-            border: 2px solid var(--cian); box-shadow: inset 0 0 15px var(--cian);
+        #instruction {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            font-size: 38px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            padding: 15px 30px;
+            box-sizing: border-box;
         }
-        .eyes-container { position: absolute; top: 45px; left: 50%; transform: translateX(-50%); display: flex; gap: 25px; }
-        .eye { width: 15px; height: 35px; background: var(--cian); border-radius: 4px; transition: 0.1s; }
-        .mouth {
-            position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
-            width: 45px; height: 6px; background: var(--cian); border-radius: 10px;
-            transition: all 0.06s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        #instruction span {
+            background: rgba(0, 20, 40, 0.85);
+            border: 4px solid #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+            border-radius: 40px;
+            padding: 12px 30px;
+            display: inline-block;
         }
-
-        /* Estados de la Boca (Visemas) */
-        .m-open { height: 35px; border-radius: 50%; transform: translateX(-50%) translateY(-15px); }
-        .m-mid { height: 15px; border-radius: 20px; transform: translateX(-50%) translateY(-5px); }
-        .m-flat { height: 4px; transform: translateX(-50%); }
-
-        /* Chat y Scroll */
-        .chat-display { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); }
-        .bubble { font-size: 0.75rem; padding: 8px 12px; border-radius: 15px; max-width: 85%; line-height: 1.4; }
-        .bot-msg { background: #3f3f6e; color: var(--cian); border: 1px solid var(--cian); align-self: flex-start; }
-        .user-msg { background: #4a90e2; color: white; align-self: flex-end; }
-
-        /* Controles */
-        .input-box { display: flex; padding: 10px; background: #111122; gap: 8px; }
-        input { flex-grow: 1; background: #1a1a2e; border: 1px solid var(--cian); border-radius: 10px; padding: 8px; color: white; outline: none; font-size: 0.8rem; }
-        button { background: var(--cian); color: #1a1a2e; font-weight: 900; padding: 8px 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-        button:hover { filter: brightness(1.2); }
     </style>
 </head>
 <body>
+    <div id="instruction"><span>Haz clic sobre las frases de los títulos tocando con el dedo en tu pantalla táctil para que la página llegue a su destino. - Bello Antioquia, Copyright 2026 &copy;</span></div>
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
 
-<div class="chatbot-container">
-    <div class="avatar-zone">
-        <div class="robot-head">
-            <div class="eyes-container">
-                <div id="el" class="eye"></div>
-                <div id="er" class="eye"></div>
-            </div>
-            <div id="mouth" class="mouth m-flat"></div>
-        </div>
-    </div>
-
-    <div class="chat-display" id="chatDisplay">
-        <div class="bubble bot-msg">¡Hola! Soy tu asistente de Cerrajería Llaves. Pregúntame lo que necesites.</div>
-    </div>
-
-    <div class="input-box">
-        <input type="text" id="userInput" placeholder="Ej: Precio cambio de clave...">
-        <button onclick="procesar()">OK</button>
-    </div>
-</div>
-
-<script>
-    const mouth = document.getElementById('mouth');
-    const eyes = [document.getElementById('el'), document.getElementById('er')];
-    const display = document.getElementById('chatDisplay');
-    let lipSyncActive = false;
-
-    // MOTOR DE SINCRONIZACIÓN FONÉTICA
-    function animateLipSync(text) {
-        if (lipSyncActive) return;
-        lipSyncActive = true;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Limpiamos el texto para procesar solo sonidos
-        const cleanText = text.toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ0-9 ]/g, '');
-        const segments = cleanText.split('');
-        let delay = 0;
+        function playTick() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
 
-        segments.forEach((char, index) => {
-            setTimeout(() => {
-                if (!window.speechSynthesis.speaking) {
-                    resetMouth();
-                    return;
-                }
+        function playSuccess() {
+            [440, 660].forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.1));
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + (i * 0.1));
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + (i * 0.1));
+                osc.stop(audioCtx.currentTime + (i * 0.1) + 0.2);
+            });
+        }
 
-                // Lógica de apertura según fonema
-                if (['A', 'O', '0', '8'].includes(char)) {
-                    mouth.className = 'mouth m-open';
-                } else if (['E', 'I', 'U', '2', '3', '4', '5', '7', '9'].includes(char)) {
-                    mouth.className = 'mouth m-mid';
-                } else if (char === ' ') {
-                    mouth.className = 'mouth m-flat';
-                } else {
-                    // Consonantes (apertura leve)
-                    mouth.className = 'mouth m-mid';
-                }
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-                // Si es el último caracter, cerramos
-                if (index === segments.length - 1) {
-                    setTimeout(resetMouth, 200);
-                }
-            }, delay);
+        const starCount = 1200;
+        const starGeometry = new THREE.BufferGeometry();
+        const starPositions = new Float32Array(starCount * 3);
+        const starSpeeds = new Float32Array(starCount);
+
+        for (let i = 0; i < starCount; i++) {
+            starPositions[i * 3] = (Math.random() - 0.5) * 60;
+            starPositions[i * 3 + 1] = (Math.random() - 0.5) * 60;
+            starPositions[i * 3 + 2] = (Math.random() - 0.5) * 60;
+            starSpeeds[i] = 0.05 + Math.random() * 0.15;
+        }
+
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.12, transparent: true, opacity: 0.8 });
+        const starField = new THREE.Points(starGeometry, starMaterial);
+        scene.add(starField);
+
+        const group = new THREE.Group();
+        scene.add(group);
+
+        const shape = new THREE.Shape();
+        shape.moveTo(0, 1.8); shape.lineTo(0.7, 1.5); shape.lineTo(0.9, 0.9);
+        shape.lineTo(0.7, 0.4); shape.lineTo(0.20, 0.1); 
+        shape.lineTo(0.38, -0.1); shape.lineTo(0.20, -0.3);
+        shape.lineTo(0.38, -0.5); shape.lineTo(0.20, -0.7);
+        shape.lineTo(0.38, -0.9); shape.lineTo(0.20, -1.1);
+        shape.lineTo(0.38, -1.3); shape.lineTo(0.20, -1.5);
+        shape.lineTo(0.38, -1.7); shape.lineTo(0, -2.1); 
+        shape.lineTo(-0.20, -1.7); shape.lineTo(-0.20, 0.1);
+        shape.lineTo(-0.7, 0.4); shape.lineTo(-0.9, 0.9); 
+        shape.lineTo(-0.7, 1.5); shape.lineTo(0, 1.8);
+        shape.closePath();
+
+        const hole = new THREE.Path();
+        const r = 0.22; const cy = 1.05;
+        hole.moveTo(r, cy); hole.lineTo(r * 0.707, cy + r * 0.707);
+        hole.lineTo(0, cy + r); hole.lineTo(-r * 0.707, cy + r * 0.707);
+        hole.lineTo(-r, cy); hole.lineTo(-r * 0.707, cy - r * 0.707);
+        hole.lineTo(0, cy - r); hole.lineTo(r * 0.707, cy - r * 0.707);
+        shape.holes.push(hole);
+
+        const lineLeft = new THREE.Path();
+        lineLeft.moveTo(-0.08, 0.05); lineLeft.lineTo(-0.08, -1.6);
+        lineLeft.lineTo(-0.02, -1.6); lineLeft.lineTo(-0.02, 0.05);
+        shape.holes.push(lineLeft);
+
+        const lineRight = new THREE.Path();
+        lineRight.moveTo(0.08, 0.05); lineRight.lineTo(0.08, -1.6);
+        lineRight.lineTo(0.02, -1.6); lineRight.lineTo(0.02, 0.05);
+        shape.holes.push(lineRight);
+
+        const geom = new THREE.ExtrudeGeometry(shape, { depth: 0.4, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.05 });
+        const keyMaterial = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2, emissive: 0x000000 });
+        const key = new THREE.Mesh(geom, keyMaterial);
+        key.geometry.center();
+        group.add(key);
+
+        function createServiceText(zPos, rotationY) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 100px Arial';
+            ctx.fillText('Servicio Tecnico', 512, 500);
+            ctx.fillText('3044654556', 512, 600);
+            const texture = new THREE.CanvasTexture(canvas);
+            const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthTest: false }));
+            textMesh.renderOrder = 1;
+            textMesh.position.set(0, 0.65, zPos);
+            textMesh.rotation.y = rotationY;
+            return textMesh;
+        }
+        group.add(createServiceText(0.26, 0));
+        group.add(createServiceText(-0.26, Math.PI));
+
+        const scrollers = [];
+        const scrollerMessages = ['APERTURAS DE PUERTAS', 'PARA CARRO Y CASA', 'CAMBIO DE CLAVES', '304 465 45 56'];
+        const imgLoader = new THREE.TextureLoader();
+        const waLogo = imgLoader.load('https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg');
+
+        function createScroller(yPos, text) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; 
+            canvas.height = 256; 
+            const ctx = canvas.getContext('2d');
             
-            // Tiempo por caracter (ajustado a la velocidad del habla estándar)
-            delay += 75; 
+            ctx.textAlign = 'left';
+
+            if (text === '304 465 45 56') {
+                ctx.beginPath();
+                ctx.roundRect(10, 5, 610, 245, 50); 
+                ctx.fillStyle = 'rgba(0, 20, 40, 0.85)';
+                ctx.fill();
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 15;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 80px Arial';
+                ctx.fillText(text, 40, 80);
+                const logoSize = 85; 
+                if(waLogo.image) ctx.drawImage(waLogo.image, 40, 95, logoSize, logoSize);
+                ctx.font = 'bold 90px Arial'; 
+                ctx.fillText('WhatsApp', 135, 165);
+                ctx.font = 'bold 50px Arial';
+                ctx.fillText('haz clic aquí', 135, 220);
+            } else {
+                ctx.font = 'bold 80px Arial';
+                const textWidth = ctx.measureText(text).width;
+                
+                ctx.beginPath();
+                ctx.roundRect(10, 55, textWidth + 60, 130, 65);
+                ctx.fillStyle = 'rgba(0, 20, 40, 0.85)';
+                ctx.fill();
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 15;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillText(text, 40, 150);
+            }
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3, 0.75), new THREE.MeshBasicMaterial({ map: texture, transparent: true }));
+            mesh.position.set(5, yPos, 0); 
+            mesh.userData.stopTime = null; 
+            scene.add(mesh);
+            return mesh;
+        }
+
+        const clock = new THREE.Clock();
+        const targetPos = new THREE.Vector3(-1.5, 1.2, 0); 
+        const targetScale = new THREE.Vector3(0.4, 0.4, 0.4);
+        let moveStarted = false;
+        let firstScrollerSpawned = false;
+        let clickCount = 0;
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        window.addEventListener('pointerdown', (event) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scrollers);
+            
+            if (intersects.length > 0 && scrollers.indexOf(intersects[0].object) === 3) {
+                playSuccess();
+                setTimeout(() => {
+                    let toggle = 0;
+                    const blink = setInterval(() => {
+                        key.visible = !key.visible;
+                        key.material.emissive.set(Math.random() * 0xffffff);
+                        key.material.emissiveIntensity = toggle % 2 === 0 ? 10 : 0;
+                        toggle++;
+                    }, 5);
+                    setTimeout(() => {
+                        clearInterval(blink);
+                        key.visible = true;
+                        key.material.emissiveIntensity = 0;
+                        window.open('https://wa.me/573044654556', '_self');
+                    }, 50);
+                }, 20);
+                return;
+            }
+            
+            if (moveStarted) {
+                if (clickCount < 3) {
+                    clickCount++;
+                    if (clickCount === 3) playSuccess(); else playTick();
+                    const newY = 1.2 - (clickCount * 0.8);
+                    group.position.y = newY;
+                    const s = createScroller(newY, scrollerMessages[clickCount]);
+                    scrollers.push(s);
+                } else {
+                    playTick();
+                    clickCount = 0;
+                    group.position.set(targetPos.x, targetPos.y, targetPos.z);
+                    scrollers.forEach(s => scene.remove(s));
+                    scrollers.length = 0;
+                    scrollers.push(createScroller(1.2, scrollerMessages[0]));
+                }
+            }
         });
-    }
 
-    function resetMouth() {
-        mouth.className = 'mouth m-flat';
-        lipSyncActive = false;
-        eyes.forEach(e => e.style.background = '#00f0ff');
-    }
+        const light = new THREE.DirectionalLight(0xffffff, 2);
+        light.position.set(0, 0, 5);
+        scene.add(light, new THREE.AmbientLight(0xffffff, 0.8));
+        camera.position.z = 5;
 
-    function hablar(mensaje) {
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(mensaje);
-        msg.lang = 'es-ES';
-        msg.rate = 1.0;
-        
-        msg.onstart = () => {
-            eyes.forEach(e => e.style.background = '#00FF00');
-            animateLipSync(mensaje);
-        };
-        
-        msg.onend = resetMouth;
-        window.speechSynthesis.speak(msg);
-    }
+        function animate() {
+            requestAnimationFrame(animate);
 
-    function procesar() {
-        const input = document.getElementById('userInput');
-        const rawText = input.value.trim();
-        if (!rawText) return;
+            const positions = starGeometry.attributes.position.array;
+            for (let i = 0; i < starCount; i++) {
+                positions[i * 3 + 2] += starSpeeds[i];
+                if (positions[i * 3 + 2] > 10) {
+                    positions[i * 3 + 2] = -30;
+                    positions[i * 3] = (Math.random() - 0.5) * 60;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 60;
+                }
+            }
+            starGeometry.attributes.position.needsUpdate = true;
+            starField.rotation.z += 0.0005;
 
-        addMsg(rawText, 'user-msg');
-        input.value = '';
-
-        // LÓGICA DE NEGOCIO (PRECIOS)
-        let respuesta = "El costo de nuestros servicios de cerrajería, como el cambio de clave, es de 45.000 pesos.";
-        
-        const lower = rawText.toLowerCase();
-        if (lower.includes("clave") || lower.includes("precio") || lower.includes("cuanto cuesta")) {
-            respuesta = "El servicio de cambio de clave técnico tiene un valor exacto de 45.000 pesos. ¿Deseas agendar un cerrajero ahora?";
-        } else if (lower.includes("hola")) {
-            respuesta = "¡Hola! Bienvenido a Cerrajería Llaves. Te informo que hoy el cambio de clave cuesta 45.000 pesos. ¿En qué te puedo ayudar?";
+            group.rotation.y += 0.035;
+            if (clock.getElapsedTime() > 1.5) moveStarted = true;
+            if (moveStarted) {
+                if (group.position.distanceTo(targetPos) > 0.1 && clickCount === 0) {
+                    group.position.lerp(targetPos, 0.12);
+                    group.scale.lerp(targetScale, 0.12);
+                } else if (!firstScrollerSpawned) {
+                    scrollers.push(createScroller(1.2, scrollerMessages[0]));
+                    firstScrollerSpawned = true;
+                    document.getElementById('instruction').style.opacity = '1';
+                }
+                scrollers.forEach((s, index) => {
+                    if (s.position.x > 0.6) { s.position.x -= 0.1; }
+                    else {
+                        if (s.userData.stopTime === null) s.userData.stopTime = Date.now();
+                        if (scrollers.indexOf(s) === 3 && scrollers.length === 4 && (Date.now() - s.userData.stopTime > 100)) {
+                            s.visible = Math.floor(clock.getElapsedTime() * 2.0) % 2 === 0;
+                        }
+                    }
+                    const pulse = 1 + Math.sin(clock.getElapsedTime() * 4 + index) * 0.03;
+                    s.scale.set(pulse, pulse, 1);
+                });
+            }
+            renderer.render(scene, camera);
         }
-
-        setTimeout(() => {
-            addMsg(respuesta, 'bot-msg');
-            hablar(respuesta);
-        }, 400);
-    }
-
-    function addMsg(txt, clase) {
-        const div = document.createElement('div');
-        div.className = `bubble ${clase}`;
-        div.textContent = txt;
-        display.appendChild(div);
-        display.scrollTop = display.scrollHeight;
-    }
-
-    // Parpadeo automático natural
-    setInterval(() => {
-        if (!lipSyncActive) {
-            eyes.forEach(e => e.style.transform = 'scaleY(0.1)');
-            setTimeout(() => eyes.forEach(e => e.style.transform = 'scaleY(1)'), 150);
-        }
-    }, 4000);
-</script>
-
+        animate();
+    </script>
 </body>
 </html>
