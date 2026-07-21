@@ -18,7 +18,7 @@
             text-align: center;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
             pointer-events: none;
@@ -33,17 +33,17 @@
             border: 2px solid #00ffff;
             box-shadow: 0 0 12px #00ffff;
             border-radius: 20px;
-            padding: 8px 15px;
+            padding: 10px 18px;
             display: inline-block;
         }
         @media (max-width: 768px) {
-            #instruction { font-size: 13px; }
-            #instruction span { padding: 5px 10px; }
+            #instruction { font-size: 15px; }
+            #instruction span { padding: 6px 12px; }
         }
     </style>
 </head>
 <body>
-    <div id="instruction"><span>Haz clic sobre las frases usando tu pantalla táctil para llegar a tu destino. - Bello Antioquia, Copyright 2026 &copy;</span></div>
+    <div id="instruction"><span id="instruction-text"></span></div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -54,12 +54,18 @@
         // Detección estricta basada en el ancho físico de la pantalla
         const esMovil = window.innerWidth <= 768;
 
+        // Frases específicas diferenciadas para Android y PC sin la palabra "Atención"
+        const textoAndroid = "Toca la pantalla táctil para interactuar con los servicios. - Bello Antioquia, Copyright 2026 \u00A9";
+        const textoPC = "Dale clic con el ratón del mouse a los párrafos para llegar al destino. - Bello Antioquia, Copyright 2026 \u00A9";
+
+        document.getElementById('instruction-text').innerText = esMovil ? textoAndroid : textoPC;
+
         // Configuración con la llave más a la izquierda en dispositivos móviles
         const configOriginal = {
-            llaveX: esMovil ? -1.2 : -1.6,       // Llave desplazada más a la izquierda
+            llaveX: esMovil ? -1.2 : -1.6,       
             llaveYInicio: 0,
             llaveEscala: esMovil ? 0.28 : 0.38,
-            scrollerX: esMovil ? 0.65 : 0.8,    // Los scrollers frenan manteniendo su espacio a la derecha
+            scrollerX: esMovil ? 0.65 : 0.8,    
             scrollerInicioX: 6.5,               
             scrollerAncho: esMovil ? 2.3 : 3.4,
             scrollerAlto: esMovil ? 0.50 : 0.85,
@@ -168,7 +174,7 @@
             const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshBasicMaterial({ 
                 map: texture, 
                 transparent: true, 
-                depthTest: !esMovil 
+                depthTest: false 
             }));
             textMesh.renderOrder = 1;
             textMesh.position.set(0, 0.65, zPos);
@@ -343,7 +349,6 @@
                 }
                 scrollers.forEach((s, index) => {
                     const targetXPos = configOriginal.scrollerX;
-                    // Frenado seguro adaptado para móviles
                     if (s.position.x > targetXPos) { s.position.x -= 0.1; }
                     else {
                         if (s.userData.stopTime === null) s.userData.stopTime = Date.now();
