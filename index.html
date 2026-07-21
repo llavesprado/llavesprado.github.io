@@ -38,7 +38,8 @@
     </style>
 </head>
 <body>
-    <div id="instruction"><span>Haz clic sobre las frases de los títulos tocando con el dedo en tu pantalla táctil para que la página llegue a su destino. - Bello Antioquia, Copyright 2026 &copy;</span></div>
+    <div id="instruction"><span>Haz clic sobre las frases de los títulos usando tu mouse o pantalla táctil para que la página llegue a su destino. - Bello Antioquia, Copyright 2026 &copy;</span></div>
+
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
     </script>
@@ -71,8 +72,8 @@
         }
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({antialias: true});
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
@@ -142,6 +143,7 @@
             ctx.font = 'bold 100px Arial';
             ctx.fillText('Servicio Tecnico', 512, 500);
             ctx.fillText('3044654556', 512, 600);
+
             const texture = new THREE.CanvasTexture(canvas);
             const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthTest: false }));
             textMesh.renderOrder = 1;
@@ -162,7 +164,6 @@
             canvas.width = 1024; 
             canvas.height = 256; 
             const ctx = canvas.getContext('2d');
-            
             ctx.textAlign = 'left';
 
             if (text === '304 465 45 56') {
@@ -180,8 +181,10 @@
                 ctx.fillStyle = '#FFFFFF';
                 ctx.font = 'bold 80px Arial';
                 ctx.fillText(text, 40, 80);
+
                 const logoSize = 85; 
-                if(waLogo.image) ctx.drawImage(waLogo.image, 40, 95, logoSize, logoSize);
+                if (waLogo.image) ctx.drawImage(waLogo.image, 40, 95, logoSize, logoSize);
+
                 ctx.font = 'bold 90px Arial'; 
                 ctx.fillText('WhatsApp', 135, 165);
                 ctx.font = 'bold 50px Arial';
@@ -223,10 +226,10 @@
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
-        window.addEventListener('pointerdown', (event) => {
+        function handleInteraction(clientX, clientY) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(scrollers);
             
@@ -267,6 +270,16 @@
                     scrollers.push(createScroller(1.2, scrollerMessages[0]));
                 }
             }
+        }
+
+        window.addEventListener('pointerdown', (event) => {
+            handleInteraction(event.clientX, event.clientY);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
         const light = new THREE.DirectionalLight(0xffffff, 2);
