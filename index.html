@@ -49,7 +49,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 110px;
+            width: 130px;
         }
         #qrcode-container {
             display: flex;
@@ -63,8 +63,8 @@
         }
         #qrcode-container img {
             display: block;
-            width: 95px;
-            height: 95px;
+            width: 115px;
+            height: 115px;
             border-radius: 6px;
         }
         #qr-ticker {
@@ -80,7 +80,7 @@
             animation: tickerText 9s linear infinite;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             text-shadow: 0 0 4px #00ffff;
         }
@@ -91,9 +91,9 @@
         @media (max-width: 768px) {
             #instruction { font-size: 13px; }
             #instruction span { padding: 5px 10px; }
-            #qr-box { bottom: 15px; right: 15px; width: 90px; padding: 6px; }
-            #qrcode-container img { width: 75px; height: 75px; }
-            #qr-ticker span { font-size: 9px; }
+            #qr-box { bottom: 15px; right: 15px; width: 110px; padding: 6px; }
+            #qrcode-container img { width: 95px; height: 95px; }
+            #qr-ticker span { font-size: 8px; }
         }
     </style>
 </head>
@@ -101,7 +101,7 @@
     <div id="qr-box">
         <div id="qrcode-container" title="Haz clic o detecta el QR">
             <a href="https://llavesprado.github.io" target="_self" id="qr-link">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fllavesprado.github.io" alt="QR Web">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fllavesprado.github.io" alt="QR Web">
             </a>
         </div>
         <div id="qr-ticker">
