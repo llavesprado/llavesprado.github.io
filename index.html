@@ -50,6 +50,10 @@
             align-items: center;
             justify-content: center;
             pointer-events: auto;
+            transition: transform 0.2s ease;
+        }
+        #qrcode-container:hover {
+            transform: scale(1.05);
         }
         #qrcode-container img {
             display: block;
@@ -66,8 +70,8 @@
     </style>
 </head>
 <body>
-    <div id="qrcode-container">
-        <a href="https://llavesprado.github.io" target="_self">
+    <div id="qrcode-container" title="Haz clic o detecta el QR">
+        <a href="https://llavesprado.github.io" target="_self" id="qr-link">
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fllavesprado.github.io" alt="QR Web">
         </a>
     </div>
@@ -123,6 +127,26 @@
                 osc.stop(audioCtx.currentTime + (i * 0.1) + 0.2);
             });
         }
+
+        // Función para activar voz y vibración al interactuar con el contenedor del QR
+        function triggerQrFeedback() {
+            // 1. Efecto de vibración (compatible con móviles que lo soporten)
+            if ("vibrate" in navigator) {
+                navigator.vibrate([100, 50, 100]);
+            }
+
+            // 2. Síntesis de voz diciendo "QR detectado"
+            if ("speechSynthesis" in window) {
+                const utterance = new SpeechSynthesisUtterance("QR detectado");
+                utterance.lang = "es-ES";
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        const qrContainer = document.getElementById('qrcode-container');
+        qrContainer.addEventListener('pointerenter', triggerQrFeedback);
+        qrContainer.addEventListener('click', triggerQrFeedback);
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
