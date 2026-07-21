@@ -54,12 +54,12 @@
         // Detección estricta basada en el ancho físico de la pantalla
         const esMovil = window.innerWidth <= 768;
 
-        // Configuración con separación exacta para evitar que se crucen
+        // Configuración con la llave más a la izquierda en dispositivos móviles
         const configOriginal = {
-            llaveX: esMovil ? -0.8 : -1.6,       // Llave situada a la izquierda
+            llaveX: esMovil ? -1.2 : -1.6,       // Llave desplazada más a la izquierda
             llaveYInicio: 0,
             llaveEscala: esMovil ? 0.28 : 0.38,
-            scrollerX: esMovil ? 0.75 : 0.8,    // Los scrollers frenan más a la derecha (sin tocar la llave)
+            scrollerX: esMovil ? 0.65 : 0.8,    // Los scrollers frenan manteniendo su espacio a la derecha
             scrollerInicioX: 6.5,               
             scrollerAncho: esMovil ? 2.3 : 3.4,
             scrollerAlto: esMovil ? 0.50 : 0.85,
