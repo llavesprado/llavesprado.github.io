@@ -42,14 +42,14 @@
             right: 20px;
             background: rgba(0, 20, 40, 0.85);
             border: 2px solid #00ffff;
-            box-shadow: 0 0 10px #00ffff;
-            border-radius: 10px;
+            box-shadow: 0 0 12px #00ffff;
+            border-radius: 12px;
             padding: 8px;
             z-index: 20;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 125px;
+            width: 130px;
         }
         #qrcode-container {
             display: flex;
@@ -63,9 +63,9 @@
         }
         #qrcode-container img {
             display: block;
-            width: 110px;
-            height: 110px;
-            border-radius: 5px;
+            width: 115px;
+            height: 115px;
+            border-radius: 6px;
         }
         #qr-ticker {
             width: 100%;
@@ -80,7 +80,7 @@
             animation: tickerText 9s linear infinite;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
             text-shadow: 0 0 4px #00ffff;
         }
@@ -91,8 +91,8 @@
         @media (max-width: 768px) {
             #instruction { font-size: 13px; }
             #instruction span { padding: 5px 10px; }
-            #qr-box { bottom: 15px; right: 15px; width: 105px; padding: 6px; }
-            #qrcode-container img { width: 90px; height: 90px; }
+            #qr-box { bottom: 15px; right: 15px; width: 110px; padding: 6px; }
+            #qrcode-container img { width: 95px; height: 95px; }
             #qr-ticker span { font-size: 8px; }
         }
     </style>
@@ -101,7 +101,7 @@
     <div id="qr-box">
         <div id="qrcode-container" title="Haz clic o detecta el QR">
             <a href="https://llavesprado.github.io" target="_self" id="qr-link">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https%3A%2F%2Fllavesprado.github.io" alt="QR Web">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fllavesprado.github.io" alt="QR Web">
             </a>
         </div>
         <div id="qr-ticker">
