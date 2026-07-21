@@ -42,14 +42,14 @@
             right: 20px;
             background: rgba(0, 20, 40, 0.85);
             border: 2px solid #00ffff;
-            box-shadow: 0 0 12px #00ffff;
-            border-radius: 12px;
-            padding: 12px;
+            box-shadow: 0 0 15px #00ffff;
+            border-radius: 14px;
+            padding: 14px;
             z-index: 20;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 200px;
+            width: 230px;
         }
         #qrcode-container {
             display: flex;
@@ -63,15 +63,15 @@
         }
         #qrcode-container img {
             display: block;
-            width: 185px;
-            height: 185px;
+            width: 215px;
+            height: 215px;
             border-radius: 6px;
         }
         #qr-ticker {
             width: 100%;
             overflow: hidden;
             white-space: nowrap;
-            margin-top: 10px;
+            margin-top: 12px;
             pointer-events: none;
         }
         #qr-ticker span {
@@ -80,7 +80,7 @@
             animation: tickerText 9s linear infinite;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
             text-shadow: 0 0 4px #00ffff;
         }
@@ -91,9 +91,9 @@
         @media (max-width: 768px) {
             #instruction { font-size: 13px; }
             #instruction span { padding: 5px 10px; }
-            #qr-box { bottom: 15px; right: 15px; width: 150px; padding: 10px; }
-            #qrcode-container img { width: 135px; height: 135px; }
-            #qr-ticker span { font-size: 10px; }
+            #qr-box { bottom: 15px; right: 15px; width: 185px; padding: 12px; }
+            #qrcode-container img { width: 170px; height: 170px; }
+            #qr-ticker span { font-size: 11px; }
         }
     </style>
 </head>
@@ -101,7 +101,7 @@
     <div id="qr-box">
         <div id="qrcode-container" title="Haz clic o detecta el QR">
             <a href="https://llavesprado.github.io" target="_self" id="qr-link">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fllavesprado.github.io" alt="QR Web">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=https%3A%2F%2Fllavesprado.github.io" alt="QR Web">
             </a>
         </div>
         <div id="qr-ticker">
