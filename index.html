@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Orión: Configuración Android y PC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Orión: Llaves Prado</title>
     <style>
         body { 
             margin: 0; 
@@ -12,31 +13,32 @@
         }
         #instruction {
             position: absolute;
-            top: 20px;
+            top: 15px;
             width: 100%;
             text-align: center;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
             pointer-events: none;
             z-index: 10;
             opacity: 0;
             transition: opacity 1s ease-in-out;
-            padding: 10px 20px;
+            padding: 0 10px;
             box-sizing: border-box;
         }
         #instruction span {
             background: rgba(0, 20, 40, 0.85);
-            border: 3px solid #00ffff;
-            box-shadow: 0 0 15px #00ffff;
-            border-radius: 30px;
-            padding: 10px 25px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 12px #00ffff;
+            border-radius: 20px;
+            padding: 8px 15px;
             display: inline-block;
         }
         @media (max-width: 768px) {
-            #instruction { font-size: 18px; }
+            #instruction { font-size: 13px; }
+            #instruction span { padding: 5px 10px; }
         }
     </style>
 </head>
@@ -49,16 +51,18 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // IDENTIFICACIÓN DE DISPOSITIVO Y SEPARACIÓN INDependiente DE POSICIONES
-        const esAndroid = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        const esMovil = window.innerWidth < window.innerHeight || window.innerWidth <= 768;
 
-        // Configuraciones totalmente independientes para PC y Android para evitar cruces
-        const perfilActual = {
-            posicionLlaveX: esAndroid ? 1.1 : -1.6, // En Android la llave va a la derecha; en PC a la izquierda
-            escalaLlave: esAndroid ? 0.30 : 0.38,
-            anchoScroller: esAndroid ? 2.2 : 3.4,
-            altoScroller: esAndroid ? 0.55 : 0.85,
-            posicionScrollerX: esAndroid ? -0.8 : 0.8 // En Android los textos van a la izquierda de la llave
+        // Configuración idéntica a tu primera imagen exitosa
+        const configOriginal = {
+            llaveX: esMovil ? -1.1 : -1.6,       // Llave a la izquierda
+            llaveYInicio: 0,
+            llaveEscala: esMovil ? 0.30 : 0.38,
+            scrollerX: esMovil ? 0.25 : 0.8,    // Scrollers frenan a la derecha de la llave
+            scrollerInicioX: 6.5,               
+            scrollerAncho: esMovil ? 2.1 : 3.4,
+            scrollerAlto: esMovil ? 0.48 : 0.85,
+            espaciadoY: esMovil ? 0.60 : 0.8
         };
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -163,7 +167,7 @@
             const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshBasicMaterial({ 
                 map: texture, 
                 transparent: true, 
-                depthTest: esAndroid 
+                depthTest: !esMovil 
             }));
             textMesh.renderOrder = 1;
             textMesh.position.set(0, 0.65, zPos);
@@ -229,18 +233,18 @@
             
             const texture = new THREE.CanvasTexture(canvas);
             const mesh = new THREE.Mesh(
-                new THREE.PlaneGeometry(perfilActual.anchoScroller, perfilActual.altoScroller), 
+                new THREE.PlaneGeometry(configOriginal.scrollerAncho, configOriginal.scrollerAlto), 
                 new THREE.MeshBasicMaterial({ map: texture, transparent: true })
             );
-            mesh.position.set(6.5, yPos, 0); 
+            mesh.position.set(configOriginal.scrollerInicioX, yPos, 0); 
             mesh.userData.stopTime = null; 
             scene.add(mesh);
             return mesh;
         }
 
         const clock = new THREE.Clock();
-        const targetPos = new THREE.Vector3(perfilActual.posicionLlaveX, esAndroid ? -0.3 : 1.2, 0); 
-        const targetScale = new THREE.Vector3(perfilActual.escalaLlave, perfilActual.escalaLlave, perfilActual.escalaLlave);
+        const targetPos = new THREE.Vector3(configOriginal.llaveX, esMovil ? -0.2 : 1.2, 0); 
+        const targetScale = new THREE.Vector3(configOriginal.llaveEscala, configOriginal.llaveEscala, configOriginal.llaveEscala);
         let moveStarted = false;
         let firstScrollerSpawned = false;
         let clickCount = 0;
@@ -279,7 +283,8 @@
                 if (clickCount < 3) {
                     clickCount++;
                     if (clickCount === 3) playSuccess(); else playTick();
-                    const newY = (esAndroid ? -0.3 : 1.2) - (clickCount * (esAndroid ? 0.65 : 0.8));
+                    const baseStartY = esMovil ? -0.2 : 1.2;
+                    const newY = baseStartY - (clickCount * configOriginal.espaciadoY);
                     group.position.y = newY;
                     const s = createScroller(newY, scrollerMessages[clickCount]);
                     scrollers.push(s);
@@ -336,7 +341,8 @@
                     document.getElementById('instruction').style.opacity = '1';
                 }
                 scrollers.forEach((s, index) => {
-                    const targetXPos = perfilActual.posicionScrollerX;
+                    const targetXPos = configOriginal.scrollerX;
+                    // Frenado exacto respetando la posición de la llave a la izquierda
                     if (s.position.x > targetXPos) { s.position.x -= 0.1; }
                     else {
                         if (s.userData.stopTime === null) s.userData.stopTime = Date.now();
