@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -43,9 +44,7 @@
     </style>
 </head>
 <body>
-    <div id="instruction">
-        <span>Si estás en un Android, toca la pantalla táctil de tu Android. Y si estás en una PC, dale clic con el ratón del mouse a los párrafos para que la página llegue a su destino. Bello Antioquia, Copyright 2026 &copy;</span>
-    </div>
+    <div id="instruction"><span id="instruction-text"></span></div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -56,12 +55,18 @@
         // Detección estricta basada en el ancho físico de la pantalla
         const esMovil = window.innerWidth <= 768;
 
+        // Frases específicas diferenciadas para Android y PC sin la palabra "Atención"
+        const textoAndroid = "Toca la pantalla táctil para interactuar con los servicios. - Bello Antioquia, Copyright 2026 \u00A9";
+        const textoPC = "Dale clic con el ratón del mouse a los párrafos para llegar al destino. - Bello Antioquia, Copyright 2026 \u00A9";
+
+        document.getElementById('instruction-text').innerText = esMovil ? textoAndroid : textoPC;
+
         // Configuración con la llave más a la izquierda en dispositivos móviles
         const configOriginal = {
-            llaveX: esMovil ? -1.2 : -1.6,       // Llave desplazada más a la izquierda
+            llaveX: esMovil ? -1.2 : -1.6,       
             llaveYInicio: 0,
             llaveEscala: esMovil ? 0.28 : 0.38,
-            scrollerX: esMovil ? 0.65 : 0.8,    // Los scrollers frenan manteniendo su espacio a la derecha
+            scrollerX: esMovil ? 0.65 : 0.8,    
             scrollerInicioX: 6.5,               
             scrollerAncho: esMovil ? 2.3 : 3.4,
             scrollerAlto: esMovil ? 0.50 : 0.85,
