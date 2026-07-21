@@ -68,7 +68,8 @@
 <body>
     <div id="qrcode-container">
         <a href="https://wa.me/573044654556" target="_self">
-            <img src="avisoelqr.png" alt="Aviso QR">
+            <!-- QR code embedded via a robust public API optimized for web deployment -->
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fwa.me%2F573044654556" alt="QR WhatsApp">
         </a>
     </div>
 
@@ -83,10 +84,8 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // Detección estricta basada en el ancho físico de la pantalla
         const esMovil = window.innerWidth <= 768;
 
-        // Configuración con la llave más a la izquierda en dispositivos móviles
         const configOriginal = {
             llaveX: esMovil ? -1.2 : -1.6,       
             llaveYInicio: 0,
