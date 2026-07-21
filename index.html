@@ -18,7 +18,7 @@
             text-align: center;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
             pointer-events: none;
@@ -33,17 +33,19 @@
             border: 2px solid #00ffff;
             box-shadow: 0 0 12px #00ffff;
             border-radius: 20px;
-            padding: 8px 15px;
+            padding: 10px 18px;
             display: inline-block;
         }
         @media (max-width: 768px) {
-            #instruction { font-size: 13px; }
-            #instruction span { padding: 5px 10px; }
+            #instruction { font-size: 15px; }
+            #instruction span { padding: 6px 12px; }
         }
     </style>
 </head>
 <body>
-    <div id="instruction"><span>Haz clic sobre las frases usando tu pantalla táctil para llegar a tu destino. - Bello Antioquia, Copyright 2026 &copy;</span></div>
+    <div id="instruction">
+        <span>Si estás en un Android, toca la pantalla táctil de tu Android. Y si estás en una PC, dale clic con el ratón del mouse a los párrafos para que la página llegue a su destino. Bello Antioquia, Copyright 2026 &copy;</span>
+    </div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -168,7 +170,7 @@
             const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshBasicMaterial({ 
                 map: texture, 
                 transparent: true, 
-                depthTest: !esMovil 
+                depthTest: false 
             }));
             textMesh.renderOrder = 1;
             textMesh.position.set(0, 0.65, zPos);
@@ -343,7 +345,6 @@
                 }
                 scrollers.forEach((s, index) => {
                     const targetXPos = configOriginal.scrollerX;
-                    // Frenado seguro adaptado para móviles
                     if (s.position.x > targetXPos) { s.position.x -= 0.1; }
                     else {
                         if (s.userData.stopTime === null) s.userData.stopTime = Date.now();
