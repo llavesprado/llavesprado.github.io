@@ -49,16 +49,16 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // IDENTIFICACIÓN DE DISPOSITIVO Y ADAPTACIÓN DE DISEÑO CENTRADO
+        // IDENTIFICACIÓN DE DISPOSITIVO Y AJUSTE FINO DE POSICIONAMIENTO
         const esAndroid = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
-        // Perfiles de renderizado responsivo para asegurar centrado perfecto en cualquier pantalla
+        // Perfiles de renderizado con el desplazamiento ajustado exactamente como pediste
         const perfilActual = {
-            posicionLlaveX: esAndroid ? 0 : -2.0, // En móvil se centra, en PC se desplaza a la izquierda
+            posicionLlaveX: (esAndroid ? 0 : -2.0) + 0.4, // Llave 2 posiciones (0.4 unidades 3D) más a la derecha
             escalaLlave: esAndroid ? 0.30 : 0.38,
             anchoScroller: esAndroid ? 2.4 : 4.0,
             altoScroller: esAndroid ? 0.6 : 1.0,
-            posicionScrollerX: esAndroid ? 0 : 1.2 // Punto de anclaje centrado para móvil vs PC
+            posicionScrollerX: (esAndroid ? 0 : 1.2) - 0.4 // Textos scroller 2 posiciones (0.4 unidades 3D) más a la izquierda
         };
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -232,7 +232,6 @@
                 new THREE.PlaneGeometry(perfilActual.anchoScroller, perfilActual.altoScroller), 
                 new THREE.MeshBasicMaterial({ map: texture, transparent: true })
             );
-            // Posición inicial de entrada fluida desde la derecha
             mesh.position.set(6.5, yPos, 0); 
             mesh.userData.stopTime = null; 
             scene.add(mesh);
@@ -337,7 +336,6 @@
                     document.getElementById('instruction').style.opacity = '1';
                 }
                 scrollers.forEach((s, index) => {
-                    // Posición de parada centrada adaptativa
                     const targetXPos = perfilActual.posicionScrollerX;
                     if (s.position.x > targetXPos) { s.position.x -= 0.1; }
                     else {
