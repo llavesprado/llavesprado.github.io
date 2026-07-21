@@ -18,7 +18,7 @@
             text-align: center;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            font-size: 26px;
+            font-size: 22px;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
             pointer-events: none;
@@ -33,87 +33,17 @@
             border: 2px solid #00ffff;
             box-shadow: 0 0 12px #00ffff;
             border-radius: 20px;
-            padding: 10px 18px;
+            padding: 8px 15px;
             display: inline-block;
-        }
-        #qr-container {
-            position: absolute;
-            top: 185px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid #00ffff;
-            box-shadow: 0 0 18px #00ffff;
-            border-radius: 16px;
-            padding: 12px 16px;
-            z-index: 20;
-            text-align: center;
-            backdrop-filter: blur(5px);
-            pointer-events: auto;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-        #qr-container img {
-            width: 150px;
-            height: 150px;
-            display: block;
-            border-radius: 8px;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-        }
-        .qr-marquee-container {
-            width: 150px;
-            overflow: hidden;
-            white-space: nowrap;
-            margin: 6px 0 0 0;
-            background: rgba(0, 10, 20, 0.6);
-            border-radius: 6px;
-            padding: 3px 0;
-            box-sizing: border-box;
-        }
-        .qr-marquee {
-            display: inline-block;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            font-size: 11px;
-            font-weight: 900;
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
-            letter-spacing: 0.5px;
-            animation: scroll-qr 8s linear infinite;
-        }
-        @keyframes scroll-qr {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
         }
         @media (max-width: 768px) {
-            #instruction { font-size: 15px; }
-            #instruction span { padding: 6px 12px; }
-            #qr-container {
-                top: 130px;
-                padding: 10px 12px;
-            }
-            #qr-container img {
-                width: 110px;
-                height: 110px;
-            }
-            .qr-marquee-container {
-                width: 110px;
-            }
-            .qr-marquee {
-                font-size: 9px;
-            }
+            #instruction { font-size: 13px; }
+            #instruction span { padding: 5px 10px; }
         }
     </style>
 </head>
 <body>
-    <div id="instruction"><span id="instruction-text"></span></div>
-
-    <div id="qr-container">
-        <img src="avisoelqr.png" alt="Código QR WhatsApp">
-        <div class="qr-marquee-container">
-            <span class="qr-marquee">ESCANEA AQUÍ EL CÓDIGO QR PARA ENTRAR A LA PÁGINA WEB &nbsp;&nbsp;&nbsp;&nbsp;</span>
-        </div>
-    </div>
+    <div id="instruction"><span>Haz clic sobre las frases usando tu pantalla táctil para llegar a tu destino. - Bello Antioquia, Copyright 2026 &copy;</span></div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -121,18 +51,15 @@
     <script type="module">
         import * as THREE from 'three';
 
+        // Detección estricta basada en el ancho físico de la pantalla
         const esMovil = window.innerWidth <= 768;
 
-        const textoAndroid = "Toca la pantalla táctil para interactuar con los servicios. - Bello Antioquia, Copyright 2026 \u00A9";
-        const textoPC = "Dale clic con el ratón del mouse a los párrafos para llegar al destino. - Bello Antioquia, Copyright 2026 \u00A9";
-
-        document.getElementById('instruction-text').innerText = esMovil ? textoAndroid : textoPC;
-
+        // Configuración con la llave más a la izquierda en dispositivos móviles
         const configOriginal = {
-            llaveX: esMovil ? -1.5 : -2.0,       
+            llaveX: esMovil ? -1.2 : -1.6,       // Llave desplazada más a la izquierda
             llaveYInicio: 0,
             llaveEscala: esMovil ? 0.28 : 0.38,
-            scrollerX: esMovil ? 0.50 : 0.65,    
+            scrollerX: esMovil ? 0.65 : 0.8,    // Los scrollers frenan manteniendo su espacio a la derecha
             scrollerInicioX: 6.5,               
             scrollerAncho: esMovil ? 2.3 : 3.4,
             scrollerAlto: esMovil ? 0.50 : 0.85,
@@ -241,7 +168,7 @@
             const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshBasicMaterial({ 
                 map: texture, 
                 transparent: true, 
-                depthTest: false 
+                depthTest: !esMovil 
             }));
             textMesh.renderOrder = 1;
             textMesh.position.set(0, 0.65, zPos);
@@ -258,57 +185,54 @@
 
         function createScroller(yPos, text) {
             const canvas = document.createElement('canvas');
-            canvas.width = 2048; 
-            canvas.height = 512; 
+            canvas.width = 1024; 
+            canvas.height = 256; 
             const ctx = canvas.getContext('2d');
             ctx.textAlign = 'left';
 
             if (text === '304 465 45 56') {
                 ctx.beginPath();
-                ctx.roundRect(20, 15, 1500, 480, 100); 
+                ctx.roundRect(10, 15, 630, 225, 45); 
                 ctx.fillStyle = 'rgba(0, 20, 40, 0.85)';
                 ctx.fill();
-                ctx.lineWidth = 14;
+                ctx.lineWidth = 6;
                 ctx.strokeStyle = '#00ffff';
                 ctx.shadowColor = '#00ffff';
-                ctx.shadowBlur = 35;
+                ctx.shadowBlur = 15;
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
                 ctx.fillStyle = '#FFFFFF';
-                ctx.font = '900 170px Arial';
-                ctx.fillText(text, 70, 165);
+                ctx.font = 'bold 62px Arial';
+                ctx.fillText(text, 35, 78);
 
-                const logoSize = 175; 
-                if (waLogo.image) ctx.drawImage(waLogo.image, 70, 220, logoSize, logoSize);
+                const logoSize = 70; 
+                if (waLogo.image) ctx.drawImage(waLogo.image, 35, 95, logoSize, logoSize);
 
-                ctx.font = '900 210px Arial'; 
-                ctx.fillText('WhatsApp', 270, 360);
-                ctx.font = '900 120px Arial';
-                ctx.fillText('haz clic aquí', 270, 465);
+                ctx.font = 'bold 70px Arial'; 
+                ctx.fillText('WhatsApp', 115, 155);
+                ctx.font = 'bold 40px Arial';
+                ctx.fillText('haz clic aquí', 115, 205);
             } else {
-                ctx.font = '900 150px Arial';
+                ctx.font = 'bold 62px Arial';
                 const textWidth = ctx.measureText(text).width;
                 
                 ctx.beginPath();
-                ctx.roundRect(20, 110, textWidth + 120, 260, 120);
+                ctx.roundRect(10, 55, textWidth + 60, 130, 60);
                 ctx.fillStyle = 'rgba(0, 20, 40, 0.85)';
                 ctx.fill();
-                ctx.lineWidth = 12;
+                ctx.lineWidth = 6;
                 ctx.strokeStyle = '#00ffff';
                 ctx.shadowColor = '#00ffff';
-                ctx.shadowBlur = 30;
+                ctx.shadowBlur = 15;
                 ctx.stroke();
                 ctx.shadowBlur = 0;
 
                 ctx.fillStyle = '#FFFFFF';
-                ctx.fillText(text, 80, 284);
+                ctx.fillText(text, 40, 142);
             }
             
             const texture = new THREE.CanvasTexture(canvas);
-            texture.minFilter = THREE.LinearFilter;
-            texture.magFilter = THREE.LinearFilter;
-
             const mesh = new THREE.Mesh(
                 new THREE.PlaneGeometry(configOriginal.scrollerAncho, configOriginal.scrollerAlto), 
                 new THREE.MeshBasicMaterial({ map: texture, transparent: true })
@@ -416,10 +340,10 @@
                     scrollers.push(createScroller(targetPos.y, scrollerMessages[0]));
                     firstScrollerSpawned = true;
                     document.getElementById('instruction').style.opacity = '1';
-                    document.getElementById('qr-container').style.opacity = '1';
                 }
                 scrollers.forEach((s, index) => {
                     const targetXPos = configOriginal.scrollerX;
+                    // Frenado seguro adaptado para móviles
                     if (s.position.x > targetXPos) { s.position.x -= 0.1; }
                     else {
                         if (s.userData.stopTime === null) s.userData.stopTime = Date.now();
