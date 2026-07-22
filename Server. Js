@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orión - Inteligencia Artificial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0d1b2a;
+            color: #e0e1dd;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background-color: #1b263b;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 2px solid #415a77;
+        }
+        .aviso {
+            background-color: #415a77;
+            color: #ffffff;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+        .user {
+            background-color: #0077b6;
+            color: white;
+            align-self: flex-end;
+        }
+        .orion {
+            background-color: #415a77;
+            color: #e0e1dd;
+            align-self: flex-start;
+        }
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #1b263b;
+            border-top: 2px solid #415a77;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            outline: none;
+            background-color: #0d1b2a;
+            color: white;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0096c7;
+        }
+    </style>
+</head>
+<body>
+
+    <header>Orión - Agente de Inteligencia Artificial</header>
+    
+    <div class="aviso">
+        ¡Hola! Habla aquí con nuestra IA para resolver dudas sobre precios, servicios o información general de la empresa.
+    </div>
+
+    <div id="chat-container">
+        <div class="message orion">¡Hola! Soy Orión. ¿En qué puedo ayudarte hoy?</div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="mensajeInput" placeholder="Escribe tu mensaje a Orión..." autofocus>
+        <button onclick="enviarMensaje()">Enviar</button>
+    </div>
+
+    <script>
+        // REEMPLAZA ESTA URL con tu túnel público (por ejemplo, Ngrok) cuando conectes tu backend local
+        const wsUrl = 'wss://tu-url-publica-o-tunel.com'; 
+        let ws;
+
+        function conectarWebSocket() {
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                console.log("Conectado al servidor de Orión");
+            };
+
+            ws.onmessage = function(event) {
+                agregarMensaje("Orión", event.data, "orion");
+            };
+
+            ws.onclose = function() {
+                console.log("Conexión cerrada. Intentando reconectar...");
+                setTimeout(conectarWebSocket, 3000);
+            };
+        }
+
+        function enviarMensaje() {
+            const input = document.getElementById('mensajeInput');
+            const texto = input.value.trim();
+            if (text === "") return;
+
+            agregarMensaje("Tú", texto, "user");
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(texto);
+            } else {
+                agregarMensaje("Sistema", "No hay conexión con el servidor de Orión en este momento.", "orion");
+            }
+
+            input.value = "";
+        }
+
+        document.getElementById('mensajeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                enviarMensaje();
+            }
+        });
+
+        function agregarMensaje(remitente, texto, clase) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = `message ${clase}`;
+            div.textContent = texto;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Iniciar la conexión al cargar la página
+        // conectarWebSocket();
+    </script>
+
+</body>
+</html>
