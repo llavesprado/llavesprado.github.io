@@ -568,7 +568,7 @@
         }
         animate();
 
-        // --- LÓGICA DE WEBSOCKETS Y CHAT FRONT-END ---
+        // --- LÓGICA DE WEBSOCKETS CON TAILSCALE ---
         let ws;
         const chatContainer = document.getElementById('chat-container');
         const chatMessages = document.getElementById('chat-messages');
@@ -585,12 +585,11 @@
         };
 
         function conectarWebSocket() {
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            // REEMPLAZA "tu-tunel.trycloudflare.com" CON TU URL REAL DE CLOUDFLARE
-            ws = new WebSocket('wss://tu-tunel.trycloudflare.com');
+            // Conexión segura a través de la red privada de Tailscale con la IP fija
+            ws = new WebSocket('ws://100.83.36.2:8080');
 
             ws.onopen = () => {
-                console.log("Enlace neuronal con Orión establecido.");
+                console.log("Enlace neuronal con Orión vía Tailscale establecido.");
                 ws.send(JSON.stringify({ type: "ping" }));
             };
 
