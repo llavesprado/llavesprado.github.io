@@ -1,256 +1,396 @@
-const express = require('express');
-const { WebSocketServer } = require('ws');
-const httpModule = require('http');
-const path = require('path');
-
-const app = express();
-const server = httpModule.createServer(app);
-const wss = new WebSocketServer({ server });
-
-// Servir el archivo HTML de forma limpia y segura
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-wss.on('connection', (ws) => {
-    ws.on('message', async (message) => {
-        try {
-            const data = JSON.parse(message);
-            if (data.type === "ping") return;
-            const promptUsuario = data.prompt;
-            const textoLimpio = promptUsuario.toLowerCase().trim();
-            let respuestaForzada = null;
-
-            const opcionesSaludos = [
-                "¡Hola! Bienvenido a Orión - Cerrajería Inteligente. ¿En qué puedo ayudarle el día de hoy?",
-                "¡Hola qué tal! Qué gusto saludarle. ¿En qué le podemos servir hoy en Orión?",
-                "¡Muy buenos días/tardes! Bienvenido a Cerrajería Orión. ¿Qué servicio necesita?",
-                "¡Hola, un placer saludarte! Aquí el sistema Orión a tu disposición. ¿Qué se te ofrece?",
-                "¡Saludos! Sistema Orión activo. ¿En qué te podemos colaborar hoy?"
-            ];
-
-            if (
-                textoLimpio.includes("hola") ||
-                textoLimpio.includes("buenos días") ||
-                textoLimpio.includes("buenas tardes") ||
-                textoLimpio.includes("buenas noches") ||
-                textoLimpio.includes("cómo estás") ||
-                textoLimpio.includes("como estas") ||
-                textoLimpio.includes("cómo te encuentras") ||
-                textoLimpio.includes("como te encuentras") ||
-                textoLimpio.includes("cómo te ha ido") ||
-                textoLimpio.includes("como te ha ido") ||
-                textoLimpio.includes("cómo le está yendo") ||
-                textoLimpio.includes("como le esta yendo") ||
-                textoLimpio.includes("cómo vas") ||
-                textoLimpio.includes("como vas") ||
-                textoLimpio.includes("qué tal") ||
-                textoLimpio.includes("que tal") ||
-                textoLimpio.includes("qué más") ||
-                textoLimpio.includes("que mas") ||
-                textoLimpio.includes("kiubo") ||
-                textoLimpio.includes("quiubo") ||
-                textoLimpio.includes("saludos")
-            ) {
-                const indiceAleatorio = Math.floor(Math.random() * opcionesSaludos.length);
-                respuestaForzada = opcionesSaludos[indiceAleatorio];
-            } else if (
-                textoLimpio.includes("muchas gracias") ||
-                textoLimpio.includes("gracias") ||
-                textoLimpio.includes("dios le pague") ||
-                textoLimpio.includes("dios lo bendiga") ||
-                textoLimpio.includes("chao") ||
-                textoLimpio.includes("hasta luego") ||
-                textoLimpio.includes("nos vemos")
-            ) {
-                respuestaForzada = "De nada, con gusto, para servirle.";
-            } else if (
-                textoLimpio.includes("quién eres") ||
-                textoLimpio.includes("quien eres") ||
-                textoLimpio.includes("quién es usted") ||
-                textoLimpio.includes("quien es usted") ||
-                textoLimpio.includes("qué eres") ||
-                textoLimpio.includes("que eres")
-            ) {
-                respuestaForzada = "Soy Orión, inteligencia artificial en lo que pueda colaborar o colaborarte.";
-            } else if (
-                textoLimpio.includes("de dónde eres") ||
-                textoLimpio.includes("de donde eres") ||
-                textoLimpio.includes("de dónde es") ||
-                textoLimpio.includes("de donde es") ||
-                textoLimpio.includes("dónde naciste") ||
-                textoLimpio.includes("donde naciste") ||
-                textoLimpio.includes("dónde fuiste creado") ||
-                textoLimpio.includes("donde fuiste creado") ||
-                textoLimpio.includes("de qué país eres") ||
-                textoLimpio.includes("de que pais eres") ||
-                textoLimpio.includes("cuál es su ubicación") ||
-                textoLimpio.includes("cual es su ubicacion")
-            ) {
-                respuestaForzada = "Mi lugar de origen es Colombia, Medellín, Bello, Antioquia.";
-            } else if (
-                textoLimpio.includes("quién te creó") ||
-                textoLimpio.includes("quien te creo") ||
-                textoLimpio.includes("quién te programó") ||
-                textoLimpio.includes("quien te programo") ||
-                textoLimpio.includes("quién te desarrolló") ||
-                textoLimpio.includes("quien te desarrollo") ||
-                textoLimpio.includes("quién te hizo") ||
-                textoLimpio.includes("quien te hizo")
-            ) {
-                respuestaForzada = "Mi creador es Alexander Amaya Atehortúa, desarrollador y programador de este modelo de lenguaje.";
-            } else if (
-                textoLimpio.includes("cómo te llamas") ||
-                textoLimpio.includes("cual es tu nombre") ||
-                textoLimpio.includes("tu nombre")
-            ) {
-                respuestaForzada = "Me llamo Orión.";
-            } else if (
-                textoLimpio.includes("necesito un trabajo") ||
-                textoLimpio.includes("trabajo de cerrajería") ||
-                textoLimpio.includes("servicio de cerrajería") ||
-                textoLimpio.includes("urgente") ||
-                textoLimpio.includes("técnico") ||
-                textoLimpio.includes("tecnico") ||
-                textoLimpio.includes("comunicar") ||
-                textoLimpio.includes("hablar con el técnico")
-            ) {
-                respuestaForzada = "Claro. Si es urgente y quieres contactar directamente al técnico, le puedes escribir por el WhatsApp o marcarle al número celular 304 465 45 56.";
-            } else if (
-                textoLimpio.includes("trabajo de chapa") ||
-                textoLimpio.includes("servicio a domicilio") ||
-                textoLimpio.includes("domicilio")
-            ) {
-                const horaActual = new Date().getHours();
-                let saludoHora = "Buenos días";
-                if (horaActual >= 12 && horaActual < 18) {
-                    saludoHora = "Buenas tardes";
-                } else if (horaActual >= 18 || horaActual < 5) {
-                    saludoHora = "Buenas noches";
-                }
-                respuestaForzada = `${saludoHora}! ¿Qué trabajo sería?`;
-            } else if (
-                textoLimpio.includes("cambio de clave") ||
-                textoLimpio.includes("cambiar una clave")
-            ) {
-                respuestaForzada = "El cambio de clave de chapa depende de cómo esté sujeta, ya sea por tornillo o soldadura.";
-            } else if (
-                textoLimpio.includes("tornillo")
-            ) {
-                respuestaForzada = "Si está con tornillo, el cambio de clave vale 45,000 pesos, se le entregan dos llaves nuevas e incluye el servicio a domicilio.";
-            } else if (
-                textoLimpio.includes("soldadura") ||
-                textoLimpio.includes("soldado")
-            ) {
-                respuestaForzada = "Si está fijada con soldadura, se quita la soldadura que tiene encima de la chapa, se baja y se le cambia la clave.";
-            } else if (
-                textoLimpio.includes("abrir una puerta") ||
-                textoLimpio.includes("abrir puerta") ||
-                textoLimpio.includes("abrir chapa")
-            ) {
-                respuestaForzada = "Para abrir una puerta necesito que me diga si la chapa está con doble pasador o si solamente está ajustada.";
-            } else if (
-                textoLimpio.includes("doble pasador") ||
-                textoLimpio.includes("doble pasado")
-            ) {
-                respuestaForzada = "Si la chapa tiene doble pasador, toca perforar el cilindro para abrirla sin dañar la puerta.";
-            } else if (
-                textoLimpio.includes("ajustada")
-            ) {
-                respuestaForzada = "Por lo general, cuando se abre una chapa ajustada vale 60.000 pesos.";
-            } else if (
-                textoLimpio.includes("servicios") ||
-                textoLimpio.includes("ofrecer") ||
-                textoLimpio.includes("que haces")
-            ) {
-                respuestaForzada = "Ofrecemos apertura de puertas, cambio de claves, instalación y reparación de cerraduras.";
-            }
-
-            if (respuestaForzada) {
-                ws.send(JSON.stringify({ response: respuestaForzada, done: true }));
-            } else {
-                const ollamaData = JSON.stringify({
-                    model: "llama3.2",
-                    prompt: `Responde en una sola frase breve que termine obligatoriamente con un punto. No agregues más texto:\n${promptUsuario}`,
-                    stream: true,
-                    keep_alive: -1,
-                    options: {
-                        temperature: 0.1,
-                        num_predict: 25,
-                        stop: ["."]
-                    }
-                });
-                const ollamaReq = httpModule.request({
-                    hostname: '127.0.0.1',
-                    port: 11434,
-                    path: '/api/generate',
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Content-Length': Buffer.byteLength(ollamaData)
-                    }
-                }, (ollamaRes) => {
-                    let bufferDatos = '';
-                    let enviadoDone = false;
-
-                    ollamaRes.on('data', (chunk) => {
-                        if (enviadoDone) return;
-                        bufferDatos += chunk.toString();
-                        const lineas = bufferDatos.split('\n');
-                        bufferDatos = lineas.pop();
-                        for (const linea of lineas) {
-                            if (linea.trim() !== '') {
-                                try {
-                                    const parsed = JSON.parse(linea);
-                                    if (parsed.response) {
-                                        ws.send(JSON.stringify({ response: parsed.response, done: false }));
-                                    }
-                                    if (parsed.done) {
-                                        ws.send(JSON.stringify({ response: ".", done: true }));
-                                        enviadoDone = true;
-                                        return;
-                                    }
-                                } catch (e) {}
-                            }
-                        }
-                    });
-                    ollamaRes.on('end', () => {
-                        if (!enviadoDone) {
-                            ws.send(JSON.stringify({ done: true }));
-                        }
-                    });
-                });
-                ollamaReq.on('error', (e) => {
-                    ws.send(JSON.stringify({ response: "Error de comunicación con Orión.", done: true }));
-                });
-                ollamaReq.write(ollamaData);
-                ollamaReq.end();
-            }
-        } catch (error) {
-            ws.send(JSON.stringify({ response: "Ocurrió un error.", done: true }));
-        }
-    });
-});
-
-function mantenerModeloDespierto() {
-    const data = JSON.stringify({ model: "llama3.2", prompt: "ping", keep_alive: -1 });
-    const req = httpModule.request({
-        hostname: '127.0.0.1',
-        port: 11434,
-        path: '/api/generate',
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }
-    }, (res) => {
-        res.on('data', () => {});
-        res.on('end', () => {});
-    });
-    req.on('error', () => {});
-    req.write(data);
-    req.end();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orión - Sistema Neuronal</title>
+<style>
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background: #050505;
+    margin: 0;
+    padding: 0;
 }
 
-server.listen(3000, '0.0.0.0', () => {
-    console.log('Servidor de Orión corriendo en http://0.0.0.0:3000');
-    mantenerModeloDespierto();
-    setInterval(mantenerModeloDespierto, 4 * 60 * 1000);
+#orion-bubble-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #00ffcc, #00d2ff);
+    border: none;
+    color: #000;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: transform 0.2s;
+}
+#orion-bubble-btn:hover {
+    transform: scale(1.1);
+}
+
+#orion-chat-container {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    height: 500px;
+    max-height: calc(100vh - 120px);
+    background: #050505;
+    border: 1px solid #00ffcc55;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 255, 204, 0.3);
+    flex-direction: column;
+    padding: 15px;
+    box-sizing: border-box;
+    z-index: 9999;
+    display: none;
+}
+
+#orion-chat-container.open {
+    display: flex;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #00ffcc33;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 14px;
+    margin: 0;
+    letter-spacing: 2px;
+    color: #00ffcc;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}
+
+.close-chat {
+    background: none;
+    border: none;
+    color: #ff007f;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#status { font-size: 10px; color: #ff007f; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+#chat {
+    flex: 1;
+    border: 1px solid #00ffcc44;
+    border-radius: 6px;
+    padding: 10px;
+    overflow-y: auto;
+    background: #0a0a0f;
+    box-shadow: inset 0 0 10px rgba(0, 255, 204, 0.1);
+    margin-bottom: 10px;
+}
+
+.message {
+    margin-bottom: 8px;
+    line-height: 1.4;
+    font-size: 13px;
+}
+.user { color: #ff007f; text-shadow: 0 0 5px rgba(255, 0, 127, 0.4); }
+.orion { color: #00ffcc; text-shadow: 0 0 5px rgba(0, 255, 204, 0.4); }
+
+.cursor {
+    display: inline-block;
+    width: 6px;
+    height: 14px;
+    background-color: #00ffcc;
+    margin-left: 3px;
+    vertical-align: middle;
+    animation: parpadeoColor 1s infinite steps(1);
+}
+
+@keyframes parpadeoColor {
+    0% { background-color: #00ffcc; box-shadow: 0 0 8px #00ffcc; }
+    33% { background-color: #ff007f; box-shadow: 0 0 8px #ff007f; }
+    66% { background-color: #00d2ff; box-shadow: 0 0 8px #00d2ff; }
+    100% { background-color: #00ffcc; box-shadow: 0 0 8px #00ffcc; }
+}
+
+#controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #00ffcc55;
+    background: #111;
+    color: #00ffcc;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    outline: none;
+}
+input[type="text"]:focus {
+    border-color: #ff007f;
+}
+button.action-btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    background: linear-gradient(45deg, #00ffcc, #00d2ff);
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+}
+#micBtn { background: linear-gradient(45deg, #ff007f, #ff5e00); color: #fff; }
+#micBtn.active { background: #00ffcc; color: #000; }
+
+.equalizer-panel {
+    display: flex;
+    gap: 5px;
+    background: #0e0e14;
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid #00ffcc33;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 5px;
+}
+.slider-group { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #888; gap: 2px; }
+.slider-group input { cursor: pointer; width: 70px; accent-color: #00ffcc; }
+</style>
+</head>
+<body>
+
+<button id="orion-bubble-btn" onclick="toggleChat()">💬</button>
+
+<div id="orion-chat-container">
+<div class="chat-header">
+<h2>ORIÓN // NÚCLEO</h2>
+<button class="close-chat" onclick="toggleChat()">✕</button>
+</div>
+<div id="status">ESTADO: CONECTANDO...</div>
+<div id="chat"></div>
+<div id="controls">
+<input type="text" id="userInput" placeholder="Comando...">
+<button id="micBtn" class="action-btn" onclick="toggleMic()">🎤</button>
+<button class="action-btn" onclick="enviarMensaje()">ENVIAR</button>
+<div class="equalizer-panel">
+<div class="slider-group">
+<label for="speedRange">VEL: <span id="speedVal">1.1</span>x</label>
+<input type="range" id="speedRange" min="0.5" max="2.0" step="0.1" value="1.1" oninput="speedVal.innerText=this.value">
+</div>
+<div class="slider-group">
+<label for="pitchRange">TONO: <span id="pitchVal">0.4</span></label>
+<input type="range" id="pitchRange" min="0.1" max="2.0" step="0.1" value="0.4" oninput="pitchVal.innerText=this.value">
+</div>
+<div class="slider-group">
+<label for="delayRange">BUF: <span id="delayVal">25</span>c</label>
+<input type="range" id="delayRange" min="10" max="80" step="1" value="25" oninput="delayVal.innerText=this.value">
+</div>
+</div>
+</div>
+</div>
+
+<script>
+let ws;
+const chat = document.getElementById('chat');
+const userInput = document.getElementById('userInput');
+const statusDiv = document.getElementById('status');
+const micBtn = document.getElementById('micBtn');
+const chatContainer = document.getElementById('orion-chat-container');
+const speedRange = document.getElementById('speedRange');
+const pitchRange = document.getElementById('pitchRange');
+const delayRange = document.getElementById('delayRange');
+let currentOrionMsg = null;
+let currentCursor = null;
+let recognition = null;
+let isListening = false;
+let textoCompletoRespuesta = "";
+let textoYaHablado = "";
+let selectedVoice = null;
+
+function toggleChat() {
+    chatContainer.classList.toggle('open');
+    if(chatContainer.classList.contains('open')) {
+        conectarWebSocket();
+        userInput.focus();
+    }
+}
+
+function conectarWebSocket() {
+if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+ws = new WebSocket(wsProtocol + window.location.host);
+
+ws.onopen = () => {
+statusDiv.innerText = "ESTADO: ENLACE ACTIVO";
+ws.send(JSON.stringify({ type: "ping" }));
+};
+
+ws.onmessage = (event) => {
+const data = JSON.parse(event.data);
+if (data.response) {
+if (!currentOrionMsg) {
+currentOrionMsg = document.createElement('div');
+currentOrionMsg.className = 'message orion';
+currentOrionMsg.innerHTML = '<b>Orión:</b> <span class="text-content"></span><span class="cursor"></span>';
+chat.appendChild(currentOrionMsg);
+currentCursor = currentOrionMsg.querySelector('.cursor');
+}
+const textSpan = currentOrionMsg.querySelector('.text-content');
+textSpan.innerText += data.response;
+currentOrionMsg.appendChild(currentCursor);
+
+textoCompletoRespuesta += data.response;
+procesarStreamingVoz(false);
+chat.scrollTop = chat.scrollHeight;
+}
+if (data.done) {
+if (currentCursor) currentCursor.remove();
+procesarStreamingVoz(true);
+currentOrionMsg = null;
+currentCursor = null;
+}
+};
+
+ws.onclose = () => {
+statusDiv.innerText = "ESTADO: RECONECTANDO...";
+setTimeout(conectarWebSocket, 300);
+};
+}
+
+function cargarVoces() {
+if (!('speechSynthesis' in window)) return;
+const voices = window.speechSynthesis.getVoices();
+selectedVoice = voices.find(v => v.lang.startsWith('es') && !v.lang.includes('ES')) || voices.find(v => v.lang.startsWith('es')) || voices[0];
+}
+if ('speechSynthesis' in window) {
+window.speechSynthesis.onvoiceschanged = cargarVoces;
+cargarVoces();
+}
+
+function hablarBloqueSeguido(textoBloque) {
+if (!('speechSynthesis' in window) || !textoBloque.trim()) return;
+const utterance = new SpeechSynthesisUtterance(textoBloque);
+if (selectedVoice) utterance.voice = selectedVoice;
+utterance.lang = 'es-MX';
+utterance.rate = parseFloat(speedRange.value);
+utterance.pitch = parseFloat(pitchRange.value);
+window.speechSynthesis.speak(utterance);
+}
+
+function procesarStreamingVoz(forzarFinal = false) {
+if (!('speechSynthesis' in window)) return;
+const textoPendiente = textoCompletoRespuesta.slice(textoYaHablado.length);
+
+const indicePunto = textoPendiente.search(/[.\?!]/);
+if (indicePunto !== -1) {
+const bloqueHastaPunto = textoPendiente.slice(0, indicePunto + 1);
+if (bloqueHastaPunto.trim().length > 0) {
+hablarBloqueSeguido(bloqueHastaPunto);
+textoYaHablado += bloqueHastaPunto;
+}
+return;
+}
+
+if (forzarFinal) {
+if (textoPendiente.trim().length > 0) {
+hablarBloqueSeguido(textoPendiente);
+textoYaHablado += textoPendiente;
+}
+return;
+}
+
+const umbralBuffer = parseInt(delayRange.value);
+if (textoPendiente.length >= umbralBuffer) {
+let indiceCorte = textoPendiente.length;
+const ultimaComa = textoPendiente.lastIndexOf(',');
+const ultimoEspacio = textoPendiente.lastIndexOf(' ');
+if (ultimaComa > umbralBuffer / 2) {
+indiceCorte = ultimaComa + 1;
+} else if (ultimoEspacio > 0) {
+indiceCorte = ultimoEspacio + 1;
+}
+const bloqueParaHablar = textoPendiente.slice(0, indiceCorte);
+if (bloqueParaHablar.trim().length > 0) {
+hablarBloqueSeguido(bloqueParaHablar);
+textoYaHablado += bloqueParaHablar;
+}
+}
+}
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+recognition = new SpeechRecognition();
+recognition.lang = 'es-ES';
+recognition.continuous = false;
+recognition.interimResults = false;
+recognition.onresult = (event) => {
+const speechToText = event.results[0][0].transcript;
+userInput.value = speechToText;
+statusDiv.innerText = "VOZ CAPTURADA";
+enviarMensaje(speechToText);
+detenerMic();
+};
+recognition.onerror = () => detenerMic();
+recognition.onend = () => { if (isListening) detenerMic(); };
+}
+
+function toggleMic() {
+if (!recognition) return alert("Reconocimiento de voz no soportado.");
+if (isListening) {
+recognition.stop();
+detenerMic();
+} else {
+try {
+window.speechSynthesis.cancel();
+recognition.start();
+isListening = true;
+micBtn.classList.add('active');
+micBtn.innerText = "🔴";
+statusDiv.innerText = "ESTADO: ESCUCHANDO...";
+} catch(e) {}
+}
+}
+
+function detenerMic() {
+isListening = false;
+micBtn.classList.remove('active');
+micBtn.innerText = "🎤";
+statusDiv.innerText = "ESTADO: ENLACE ACTIVO";
+}
+
+function enviarMensaje(texto) {
+const textoAEnviar = texto || userInput.value.trim();
+if (!textoAEnviar) return;
+if (!ws || ws.readyState !== WebSocket.OPEN) {
+conectarWebSocket();
+setTimeout(() => enviarMensaje(textoAEnviar), 400);
+return;
+}
+window.speechSynthesis.cancel();
+textoCompletoRespuesta = "";
+textoYaHablado = "";
+chat.innerHTML += '<div class="message user"><b>Tú:</b> ' + textoAEnviar + '</div>';
+ws.send(JSON.stringify({ prompt: textoAEnviar }));
+if (!texto) userInput.value = '';
+chat.scrollTop = chat.scrollHeight;
+}
+
+userInput.addEventListener('keypress', (e) => {
+if (e.key === 'Enter') enviarMensaje();
 });
+</script>
+</body>
+</html>
