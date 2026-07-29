@@ -444,6 +444,31 @@
             renderer.render(scene, camera);
         }
         animate();
+// Conéctate a la URL pública de tu servidor de Termux (vía WebSocket seguro wss://)
+const ws = new WebSocket('wss://tu-tunel.trycloudflare.com');
+
+ws.onopen = () => {
+    console.log("Enlace neuronal con Orión establecido.");
+    ws.send(JSON.stringify({ type: "ping" }));
+};
+
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.response) {
+        // Aquí recibes los fragmentos de texto que genera Orión o Ollama
+        console.log("Orión dice:", data.response);
+        // Actualiza tu burbuja de chat o interfaz visual aquí con data.response
+    }
+};
+
+// Función para enviar mensajes desde tu front-end en GitHub hacia tu servidor en Termux
+function enviarMensajeAOrion(textoPrompt) {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ prompt: textoPrompt }));
+    } else {
+        console.error("El enlace con Orión está cerrado.");
+    }
+
     </script>
 </body>
 </html>
