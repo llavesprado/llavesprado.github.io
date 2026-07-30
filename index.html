@@ -1,215 +1,76 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Orión: Llave Rodante & IA</title>
-    <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background: #000; 
-            touch-action: none; 
-            font-family: 'Courier New', Courier, monospace;
-        }
-        #orion-bubble-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #00ffcc, #00d2ff);
-            border: none;
-            color: #000;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        #orion-chat-container {
-            position: fixed;
-            bottom: 90px;
-            left: 20px;
-            width: 360px;
-            max-width: calc(100vw - 40px);
-            height: 450px;
-            background: #050505;
-            border: 1px solid #00ffcc55;
-            border-radius: 12px;
-            box-shadow: 0 5px 25px rgba(0, 255, 204, 0.3);
-            display: none;
-            flex-direction: column;
-            padding: 15px;
-            box-sizing: border-box;
-            z-index: 99999;
-        }
-        #orion-chat-container.open { display: flex; }
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #00ffcc33;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
-        }
-        h2.chat-title { font-size: 14px; margin: 0; color: #00ffcc; letter-spacing: 2px; }
-        .close-chat { background: none; border: none; color: #ff007f; font-size: 16px; cursor: pointer; font-weight: bold; }
-        #status { font-size: 10px; color: #ff007f; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        #chat {
-            flex: 1;
-            border: 1px solid #00ffcc44;
-            border-radius: 6px;
-            padding: 10px;
-            overflow-y: auto;
-            background: #0a0a0f;
-            margin-bottom: 10px;
-        }
-        .message { margin-bottom: 8px; line-height: 1.4; font-size: 13px; }
-        .user { color: #ff007f; }
-        .orion { color: #00ffcc; }
-        #controls { display: flex; gap: 6px; }
-        input[type="text"] {
-            flex: 1;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #00ffcc55;
-            background: #111;
-            color: #00ffcc;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
-            outline: none;
-        }
-        button.action-btn {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: none;
-            background: linear-gradient(45deg, #00ffcc, #00d2ff);
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
+const { WebSocketServer } = require('ws');
+const http = require('http');
 
-    <button id="orion-bubble-btn" onclick="toggleChat()">💬</button>
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Servidor puente de Orión activo hacia Ollama (Puerto 11434).\n');
+});
 
-    <div id="orion-chat-container">
-        <div class="chat-header">
-            <h2 class="chat-title">ORIÓN // NÚCLEO</h2>
-            <button class="close-chat" onclick="toggleChat()">✕</button>
-        </div>
-        <div id="status">ESTADO: CONECTANDO...</div>
-        <div id="chat"></div>
-        <div id="controls">
-            <input type="text" id="userInput" placeholder="Comando para Orión...">
-            <button class="action-btn" onclick="enviarMensaje()">ENVIAR</button>
-        </div>
-    </div>
+const wss = new WebSocketServer({ server });
 
-    <!-- Three.js para la animación 3D de la llave rodante -->
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
-    </script>
+wss.on('connection', (ws) => {
+    console.log('¡Conexión establecida con la interfaz vía Tailscale!');
 
-    <script type="module">
-        import * as THREE from 'three';
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+    ws.on('message', async (message) => {
+        try {
+            let promptText = message.toString();
+            try {
+                const parsed = JSON.parse(message);
+                if (parsed.prompt) promptText = parsed.prompt;
+            } catch (e) {}
 
-        // Fondo de estrellas
-        const starGeometry = new THREE.BufferGeometry();
-        const starPositions = new Float32Array(800 * 3);
-        for (let i = 0; i < 800 * 3; i++) starPositions[i] = (Math.random() - 0.5) * 50;
-        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-        const starField = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 }));
-        scene.add(starField);
+            console.log('Mensaje recibido para la IA:', promptText);
 
-        // Llave rodante 3D
-        const group = new THREE.Group();
-        scene.add(group);
-        const geometry = new THREE.BoxGeometry(1, 2, 0.4);
-        const material = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 });
-        const key = new THREE.Mesh(geometry, material);
-        group.add(key);
+            const ollamaData = JSON.stringify({
+                model: "llama3", // Cambia por tu modelo instalado (ej. 'phi3' o 'mistral')
+                prompt: promptText,
+                stream: false
+            });
 
-        camera.position.z = 5;
-        scene.add(new THREE.DirectionalLight(0xffffff, 2), new THREE.AmbientLight(0xffffff, 0.8));
-
-        function animate() {
-            requestAnimationFrame(animate);
-            group.rotation.x += 0.01; // Rotación rodante de la llave
-            group.rotation.y += 0.02;
-            starField.rotation.z += 0.0005;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-
-    <script>
-        let ws;
-        const chat = document.getElementById('chat');
-        const userInput = document.getElementById('userInput');
-        const statusDiv = document.getElementById('status');
-        const chatContainer = document.getElementById('orion-chat-container');
-
-        function toggleChat() {
-            chatContainer.classList.toggle('open');
-            if(chatContainer.classList.contains('open')) {
-                conectarWebSocket();
-                setTimeout(() => userInput.focus(), 100);
-            }
-        }
-
-        function conectarWebSocket() {
-            if (ws && ws.readyState === WebSocket.OPEN) return;
-            
-            // Apuntando al servidor local a través de la IP segura de Tailscale
-            ws = new WebSocket('ws://100.83.36.2:3000');
-
-            ws.onopen = () => { statusDiv.innerText = "ESTADO: ENLACE ACTIVO"; };
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.response) {
-                    chat.innerHTML += '<div class="message orion"><b>Orión:</b> ' + data.response + '</div>';
-                    chat.scrollTop = chat.scrollHeight;
+            const ollamaReq = http.request({
+                hostname: '127.0.0.1',
+                port: 11434,
+                path: '/api/generate',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(ollamaData)
                 }
-            };
-            ws.onclose = () => {
-                statusDiv.innerText = "ESTADO: RECONECTANDO...";
-                setTimeout(conectarWebSocket, 2000);
-            };
-            ws.onerror = () => { statusDiv.innerText = "ESTADO: ERROR DE ENLACE"; };
-        }
+            }, (ollamaRes) => {
+                let responseBody = '';
+                ollamaRes.on('data', (chunk) => { responseBody += chunk; });
+                ollamaRes.on('end', () => {
+                    try {
+                        const result = JSON.parse(responseBody);
+                        const respuestaIA = result.response || (result.message && result.message.content) || "Orión procesó la solicitud pero no generó texto.";
+                        
+                        ws.send(JSON.stringify({ response: respuestaIA }));
+                        console.log('Respuesta enviada de vuelta al cliente:', respuestaIA);
+                    } catch (err) {
+                        console.error('Error al parsear Ollama:', err);
+                        ws.send(JSON.stringify({ response: "Error interpretando la respuesta de la IA." }));
+                    }
+                });
+            });
 
-        function enviarMensaje() {
-            const texto = userInput.value.trim();
-            if (!texto) return;
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                alert("No hay conexión con el servidor de Orión en Tailscale.");
-                return;
-            }
-            chat.innerHTML += '<div class="message user"><b>Tú:</b> ' + texto + '</div>';
-            ws.send(JSON.stringify({ prompt: texto }));
-            userInput.value = '';
-            chat.scrollTop = chat.scrollHeight;
-        }
+            ollamaReq.on('error', (e) => {
+                console.error('Error conectando a Ollama:', e.message);
+                ws.send(JSON.stringify({ response: "Error: No se pudo conectar con el motor neuronal en el puerto 11434." }));
+            });
 
-        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensaje(); });
-    </script>
-</body>
-</html>
+            ollamaReq.write(ollamaData);
+            ollamaReq.end();
+
+        } catch (e) {
+            console.error('Error general en el manejador de mensajes:', e);
+        }
+    });
+
+    ws.on('close', () => {
+        console.log('Conexión cerrada.');
+    });
+});
+
+server.listen(3000, '0.0.0.0', () => {
+    console.log('Servidor maestro de Orión corriendo en http://0.0.0.0:3000');
+});
