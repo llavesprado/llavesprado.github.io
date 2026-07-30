@@ -155,8 +155,8 @@ function conectarWebSocket() {
 if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
 if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
-const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-ws = new WebSocket(wsProtocol + window.location.host);
+// Enlace directo a la IP de Tailscale y el puerto de tu Android
+ws = new WebSocket("ws://100.83.36.2:3000");
 
 ws.onopen = () => {
 statusDiv.innerText = "ESTADO: ENLACE NEURONAL ESTABLE";
