@@ -6,7 +6,7 @@ const app = express();
 const server = httpModule.createServer(app);
 const wss = new WebSocketServer({ server });
 
-// Ruta principal que sirve la página web 3D con la animación giratoria y el chat integrado
+// Ruta principal que sirve la página web 3D con el chat optimizado y libre de bloqueos táctiles
 app.get('/', (req, res) => {
 res.setHeader('Content-Type', 'text/html; charset=utf-8');
 res.send(`<!DOCTYPE html> 
@@ -99,7 +99,7 @@ res.send(`<!DOCTYPE html>
             100% { transform: translate3d(-100%, 0, 0); }
         }
 
-        /* Estilos del Chat Flotante de Orión */
+        /* Botón flotante del chat */
         #orion-bubble-btn {
             position: fixed;
             bottom: 20px;
@@ -118,11 +118,13 @@ res.send(`<!DOCTYPE html>
             justify-content: center;
             z-index: 9999;
             transition: transform 0.2s;
+            pointer-events: auto !important;
         }
         #orion-bubble-btn:hover {
             transform: scale(1.1);
         }
 
+        /* Contenedor del Chat con prioridad absoluta de toque y teclado */
         #orion-chat-container {
             position: fixed;
             bottom: 90px;
@@ -139,7 +141,8 @@ res.send(`<!DOCTYPE html>
             flex-direction: column;
             padding: 15px;
             box-sizing: border-box;
-            z-index: 9999;
+            z-index: 99999;
+            pointer-events: auto !important;
             display: none;
         }
 
@@ -154,6 +157,7 @@ res.send(`<!DOCTYPE html>
             border-bottom: 1px solid #00ffcc33;
             padding-bottom: 8px;
             margin-bottom: 10px;
+            pointer-events: auto !important;
         }
 
         h2.chat-title {
@@ -171,6 +175,7 @@ res.send(`<!DOCTYPE html>
             font-size: 16px;
             cursor: pointer;
             font-weight: bold;
+            pointer-events: auto !important;
         }
 
         #status { font-size: 10px; color: #ff007f; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
@@ -184,6 +189,9 @@ res.send(`<!DOCTYPE html>
             background: #0a0a0f;
             box-shadow: inset 0 0 10px rgba(0, 255, 204, 0.1);
             margin-bottom: 10px;
+            pointer-events: auto !important;
+            user-select: text;
+            -webkit-user-select: text;
         }
 
         .message {
@@ -211,7 +219,8 @@ res.send(`<!DOCTYPE html>
             100% { background-color: #00ffcc; box-shadow: 0 0 8px #00ffcc; }
         }
 
-        #controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        #controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; pointer-events: auto !important; }
+        
         input[type="text"] {
             flex: 1;
             padding: 8px;
@@ -222,6 +231,9 @@ res.send(`<!DOCTYPE html>
             font-family: 'Courier New', Courier, monospace;
             font-size: 13px;
             outline: none;
+            pointer-events: auto !important;
+            user-select: text;
+            -webkit-user-select: text;
         }
         input[type="text"]:focus {
             border-color: #ff007f;
@@ -236,6 +248,7 @@ res.send(`<!DOCTYPE html>
             cursor: pointer;
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
+            pointer-events: auto !important;
         }
         #micBtn { background: linear-gradient(45deg, #ff007f, #ff5e00); color: #fff; }
         #micBtn.active { background: #00ffcc; color: #000; }
@@ -252,9 +265,10 @@ res.send(`<!DOCTYPE html>
             align-items: center;
             justify-content: space-around;
             margin-top: 5px;
+            pointer-events: auto !important;
         }
         .slider-group { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #888; gap: 2px; }
-        .slider-group input { cursor: pointer; width: 70px; accent-color: #00ffcc; }
+        .slider-group input { cursor: pointer; width: 70px; accent-color: #00ffcc; pointer-events: auto !important; }
 
         @media (max-width: 768px) {
             #instruction { font-size: 13px; }
@@ -586,7 +600,6 @@ res.send(`<!DOCTYPE html>
         }
 
         window.addEventListener('pointerdown', (event) => {
-            // Evitar conflictos si se hace clic en la burbuja del chat
             if(event.target.closest('#orion-chat-container') || event.target.closest('#orion-bubble-btn')) return;
             handleInteraction(event.clientX, event.clientY);
         });
@@ -670,7 +683,7 @@ res.send(`<!DOCTYPE html>
             chatContainer.classList.toggle('open');
             if(chatContainer.classList.contains('open')) {
                 conectarWebSocket();
-                userInput.focus();
+                setTimeout(() => userInput.focus(), 100);
             }
         }
 
@@ -678,8 +691,8 @@ res.send(`<!DOCTYPE html>
             if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            ws = new WebSocket(wsProtocol + window.location.host);
+            // CONEXIÓN DIRECTA A LA IP LOCAL DE TU PC (Cambia la X por tu IP real, ej: 192.168.1.50)
+            ws = new WebSocket('ws://192.168.1.X:3000');
 
             ws.onopen = () => {
                 statusDiv.innerText = "ESTADO: ENLACE ACTIVO";
@@ -714,7 +727,11 @@ res.send(`<!DOCTYPE html>
 
             ws.onclose = () => {
                 statusDiv.innerText = "ESTADO: RECONECTANDO...";
-                setTimeout(conectarWebSocket, 300);
+                setTimeout(conectarWebSocket, 1500);
+            };
+
+            ws.onerror = () => {
+                statusDiv.innerText = "ESTADO: ERROR DE ENLACE";
             };
         }
 
@@ -973,7 +990,7 @@ textoLimpio.includes("tornillo")
 respuestaForzada = "Si está con tornillo, el cambio de clave vale 45,000 pesos, se le entregan dos llaves nuevas e incluye el servicio a domicilio.";
 } else if (
 textoLimpio.includes("soldadura") ||
-textoLンプio.includes("soldado")
+textoLimpio.includes("soldado")
 ) {
 respuestaForzada = "Si está fijada con soldadura, se quita la soldadura que tiene encima de la chapa, se baja y se le cambia la clave.";
 } else if (
