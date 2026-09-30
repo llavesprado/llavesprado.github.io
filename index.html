@@ -1,76 +1,1060 @@
-const { WebSocketServer } = require('ws');
+const express = require('express');
 const http = require('http');
-
-const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Servidor puente de Orión activo hacia Ollama (Puerto 11434).\n');
-});
-
+const { WebSocketServer } = require('ws');
+const app = express();
+const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
+const PORT = 3001;
+
+app.use(express.json());
+app.use(express.static(__dirname));
+
+let activeUsers = new Map();
 
 wss.on('connection', (ws) => {
-    console.log('¡Conexión establecida con la interfaz vía Tailscale!');
+    const tempId = '_' + Math.random().toString(36).substring(2, 9);
+    activeUsers.set(ws, { nick: 'Conectando...', id: tempId, status: 'activo', typing: false, msnIcon: '😊' });
 
     ws.on('message', async (message) => {
+        let data;
         try {
-            let promptText = message.toString();
-            try {
-                const parsed = JSON.parse(message);
-                if (parsed.prompt) promptText = parsed.prompt;
-            } catch (e) {}
-
-            console.log('Mensaje recibido para la IA:', promptText);
-
-            const ollamaData = JSON.stringify({
-                model: "llama3", // Cambia por tu modelo instalado (ej. 'phi3' o 'mistral')
-                prompt: promptText,
-                stream: false
-            });
-
-            const ollamaReq = http.request({
-                hostname: '127.0.0.1',
-                port: 11434,
-                path: '/api/generate',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(ollamaData)
-                }
-            }, (ollamaRes) => {
-                let responseBody = '';
-                ollamaRes.on('data', (chunk) => { responseBody += chunk; });
-                ollamaRes.on('end', () => {
-                    try {
-                        const result = JSON.parse(responseBody);
-                        const respuestaIA = result.response || (result.message && result.message.content) || "Orión procesó la solicitud pero no generó texto.";
-                        
-                        ws.send(JSON.stringify({ response: respuestaIA }));
-                        console.log('Respuesta enviada de vuelta al cliente:', respuestaIA);
-                    } catch (err) {
-                        console.error('Error al parsear Ollama:', err);
-                        ws.send(JSON.stringify({ response: "Error interpretando la respuesta de la IA." }));
-                    }
-                });
-            });
-
-            ollamaReq.on('error', (e) => {
-                console.error('Error conectando a Ollama:', e.message);
-                ws.send(JSON.stringify({ response: "Error: No se pudo conectar con el motor neuronal en el puerto 11434." }));
-            });
-
-            ollamaReq.write(ollamaData);
-            ollamaReq.end();
-
+            data = JSON.parse(message);
         } catch (e) {
-            console.error('Error general en el manejador de mensajes:', e);
+            return;
+        }
+
+        if (data.type === 'set_nick') {
+            const newNick = (data.nick || 'Anónimo').trim().substring(0, 20);
+            const userInfo = activeUsers.get(ws) || {};
+            const isNewUser = userInfo.nick === 'Conectando...' || userInfo.nick !== newNick;
+            
+            activeUsers.set(ws, {
+                nick: newNick,
+                id: ws._socket.remotePort + '_' + Date.now(),
+                status: userInfo.status || 'activo',
+                typing: userInfo.typing || false,
+                msnIcon: data.msnIcon || userInfo.msnIcon || '😊'
+            });
+            broadcastUserList();
+
+            if (isNewUser && userInfo.nick === 'Conectando...') {
+                broadcastNotification(newNick);
+            }
+            return;
+        }
+
+        if (data.type === 'set_status') {
+            const userInfo = activeUsers.get(ws);
+            if (userInfo) {
+                userInfo.status = data.status;
+                if (data.msnIcon) userInfo.msnIcon = data.msnIcon;
+                activeUsers.set(ws, userInfo);
+                broadcastUserList();
+            }
+            return;
+        }
+
+        if (data.type === 'typing_status') {
+            const userInfo = activeUsers.get(ws);
+            if (userInfo) {
+                userInfo.typing = data.typing;
+                activeUsers.set(ws, userInfo);
+                broadcastUserList();
+            }
+            return;
+        }
+
+        if (data.type === 'chat_prompt') {
+            const originalPrompt = data.prompt || "";
+            const senderNick = data.nick || "Anónimo";
+
+            broadcastToAll({
+                type: 'chat_reset_and_user_msg',
+                nick: senderNick,
+                text: originalPrompt
+            });
+
+            const userPrompt = originalPrompt.toLowerCase();
+            let respuestaEstatica = "";
+
+            if (userPrompt.includes('creador') || userPrompt.includes('programador') || userPrompt.includes('quién te creó') || userPrompt.includes('quien te creo')) {
+                respuestaEstatica = "Fui creado, diseñado y programado por Alexander Amaya Atehortúa, quien es además el cerrajero técnico principal de Llaves Prado en Bello, Antioquia. A sus disposiciones.";
+            } else if (userPrompt.includes('dónde es') || userPrompt.includes('donde es') || userPrompt.includes('dónde estás') || userPrompt.includes('donde estas') || userPrompt.includes('ubicación') || userPrompt.includes('ubicacion') || userPrompt.includes('ciudad') || userPrompt.includes('dónde queda') || userPrompt.includes('donde queda')) {
+                respuestaEstatica = "Nos encontramos ubicados en el Valle de Aburrá Medellín, Colombia, formando parte del área metropolitana. Desde aquí brindamos servicio técnico especializado en Llaves Prado. A sus disposiciones.";
+            } else if (userPrompt.includes('trabajo de cerrajería') || userPrompt.includes('tipo de trabajo') || userPrompt.includes('servicios') || userPrompt.includes('servicio') || (userPrompt.includes('trabajo') && userPrompt.includes('cerrajería'))) {
+                respuestaEstatica = "En Llaves Prado realizamos servicios integrales de cerrajería técnica y residencial en Bello y Medellín. Ofrecemos apertura de puertas residenciales y vehiculares sin daños, duplicado de llaves codificadas para autos y casas, e instalación o cambio de guardas y cerraduras de alta seguridad. A sus disposiciones.";
+            } else if (userPrompt.includes('cambio de clave') || userPrompt.includes('cambiar la clave') || userPrompt.includes('cambiar clave') || userPrompt.includes('cuánto vale') || userPrompt.includes('cuanto vale') || userPrompt.includes('precio') || userPrompt.includes('costo')) {
+                respuestaEstatica = "El cambio de clave de su chapa incluye el servicio a domicilio y depende de cómo esté sujeta: si está asegurada con tornillo, vale 50.000 pesos e incluye dos llaves; si está fijada con soldadura, el proceso vale 60.000 pesos. Para programar el servicio, comunícate al WhatsApp 304 465 45 56 con el técnico Alexander Amaya. A sus disposiciones.";
+            } else if (userPrompt.includes('urgente') || userPrompt.includes('emergencia') || userPrompt.includes('necesito al tecnico') || userPrompt.includes('necesito el técnico') || userPrompt.includes('necesito técnico') || userPrompt.includes('necesito un tecnico') || userPrompt.includes('necesito al cerrajero') || userPrompt.includes('necesito el cerrajero') || userPrompt.includes('hablar con el tecnico') || userPrompt.includes('hablar con el cerrajero') || userPrompt.includes('con el tecnico') || userPrompt.includes('con el cerrajero') || userPrompt.includes('ayuda inmediata') || userPrompt.includes('contacto') || userPrompt.includes('llamar') || userPrompt.includes('whatsapp') || userPrompt.includes('escribir') || userPrompt.includes('comunicarme') || userPrompt.includes('numero') || userPrompt.includes('número')) {
+                respuestaEstatica = "Claro que sí. El técnico y experto de Llaves Prado es Alexander Amaya Atehortúa. Puedes contactarlo directamente llamándole o escribiéndóle al WhatsApp 304 465 45 56 para una atención inmediata. A sus disposiciones.";
+            }
+
+            const aiMsgId = 'ai-msg-' + Date.now();
+            broadcastToAll({ type: 'chat_ai_start', id: aiMsgId });
+
+            if (respuestaEstatica) {
+                for (let i = 0; i < respuestaEstatica.length; i += 4) {
+                    const chunk = respuestaEstatica.slice(i, i + 4);
+                    broadcastToAll({ type: 'chat_chunk', id: aiMsgId, text: chunk });
+                    await new Promise(r => setTimeout(r, 10));
+                }
+                broadcastToAll({ type: 'chat_end', id: aiMsgId });
+            } else {
+                try {
+                    const respuestaOllama = await fetch('http://127.0.0.1:11434/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: "qwen2.5:1.5b",
+                            system: "Te llamas Orion y eres el asistente virtual experto y exclusivo de Llaves Prado en el Valle de Aburrá Medellín, Colombia. REGLA DE SEGURIDAD ABSOLUTA: JAMÁS pidas datos personales, contraseñas, cuentas bancarias, tarjetas ni números PIN. REGLA DE VOCABULARIO: En este negocio, la palabra 'clave' se refiere ÚNICAMENTE a la combinación física interna de los pines de una cerradura o chapa de puerta, NO a contraseñas digitales. REGLA DE ORO DE CONTACTO: Si el usuario dice 'necesito cambiar la clave', 'necesito al técnico', 'necesito al cerrajero', 'urgente', o busca asistencia, NO pidas información. Limítate a responder que el técnico es ALEXANDER AMAYA ATEHORTÚA y dale SU NÚMERO DE WHATSAPP 304 465 45 56 para que se comunique directamente. Termina siempre tus respuestas con la frase exacta 'a sus disposiciones'.",
+                            prompt: originalPrompt,
+                            stream: true,
+                            options: { num_thread: 2, num_predict: 200, num_ctx: 512, temperature: 0.7 }
+                        })
+                    });
+
+                    const reader = respuestaOllama.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        const chunkStr = decoder.decode(value, { stream: true });
+                        const lines = chunkStr.split('\n');
+                        for (const line of lines) {
+                            if (line.trim() !== '') {
+                                const parsed = JSON.parse(line);
+                                if (parsed.response) {
+                                    broadcastToAll({ type: 'chat_chunk', id: aiMsgId, text: parsed.response });
+                                }
+                            }
+                        }
+                    }
+                    broadcastToAll({ type: 'chat_end', id: aiMsgId });
+                } catch (err) {
+                    const fallback = "En Llaves Prado nos enfocamos exclusivamente en servicios de cerrajería técnica en Bello y Medellín. Comunícate al WhatsApp 304 465 45 56 con Alexander Amaya, a sus disposiciones.";
+                    broadcastToAll({ type: 'chat_chunk', id: aiMsgId, text: fallback });
+                    broadcastToAll({ type: 'chat_end', id: aiMsgId });
+                }
+            }
         }
     });
 
     ws.on('close', () => {
-        console.log('Conexión cerrada.');
+        if (activeUsers.has(ws)) {
+            activeUsers.delete(ws);
+            broadcastUserList();
+        }
     });
 });
 
-server.listen(3000, '0.0.0.0', () => {
-    console.log('Servidor maestro de Orión corriendo en http://0.0.0.0:3000');
+function broadcastToAll(dataObj) {
+    const payload = JSON.stringify(dataObj);
+    for (const client of wss.clients) {
+        if (client.readyState === 1) {
+            client.send(payload);
+        }
+    }
+}
+
+function broadcastUserList() {
+    const usersArray = Array.from(activeUsers.values()).map(u => ({
+        nick: u.nick,
+        status: u.status,
+        typing: u.typing,
+        msnIcon: u.msnIcon || '😊'
+    }));
+
+    const payload = JSON.stringify({
+        type: 'update_users',
+        count: usersArray.length,
+        users: usersArray
+    });
+
+    for (const client of wss.clients) {
+        if (client.readyState === 1) {
+            client.send(payload);
+        }
+    }
+}
+
+function broadcastNotification(nick) {
+    const payload = JSON.stringify({
+        type: 'user_notification',
+        nick: nick
+    });
+
+    for (const client of wss.clients) {
+        if (client.readyState === 1) {
+            client.send(payload);
+        }
+    }
+}
+
+const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orión: Valle de Aburrá Medellín, Colombia</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 480px;
+            margin: 5px auto;
+            padding: 0 5px;
+            background: #121212;
+            color: #e0e0e0;
+        }
+
+        #audio-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: opacity 0.5s ease;
+        }
+        #audio-overlay h2 {
+            color: #FFD700;
+            margin-bottom: 5px;
+            font-size: 20px;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        #audio-overlay p {
+            color: #A5D6A7;
+            font-size: 14px;
+            max-width: 320px;
+            line-height: 1.3;
+            z-index: 2;
+            margin-top: 15px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        #overlay-canvas-container {
+            width: 220px;
+            height: 220px;
+            margin: 10px 0;
+            z-index: 2;
+        }
+        #audio-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        #chat-container-wrapper {
+            position: relative;
+            width: 100%;
+            height: 270px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #0a1118;
+        }
+        #webgpu-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: block;
+            z-index: 1;
+        }
+        #chat-box {
+            position: relative;
+            z-index: 2;
+            width: 100%; height: 100%;
+            box-sizing: border-box;
+            background: rgba(10, 15, 25, 0.40);
+            overflow-y: auto;
+            padding: 8px;
+            font-size: 13px;
+            scroll-behavior: smooth;
+        }
+        #sidebar-users {
+            width: 100%;
+            background: #1a2332;
+            border: 1px solid #2a3b52;
+            border-radius: 6px;
+            padding: 6px;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            margin-top: 6px;
+        }
+        .sidebar-title {
+            font-weight: bold;
+            color: #90CAF9;
+            border-bottom: 1px solid #2a3b52;
+            padding-bottom: 4px;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        #users-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow-y: auto;
+            max-height: 120px;
+        }
+        .user-badge {
+            background: #0f1722;
+            border-left: 3px solid #81C784;
+            padding: 4px 6px;
+            color: #81C784;
+            font-weight: bold;
+            border-radius: 2px;
+            word-break: break-all;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .user-badge-left {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .user-typing-sub {
+            font-size: 9px;
+            color: #60a5fa;
+            font-style: italic;
+            margin-top: 2px;
+            display: block;
+            font-weight: normal;
+        }
+        .msg {
+            margin-bottom: 6px;
+            line-height: 1.2;
+            white-space: pre-wrap;
+            word-break: break-word;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+        }
+        .user { color: #90CAF9; font-weight: bold; }
+        .ai { color: #A5D6A7; font-weight: bold; }
+        .waiting { color: #E0E0E0; font-style: italic; }
+
+        .input-container { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+        input {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+        button {
+            padding: 6px 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .btn-action { background: #333; border: 1px solid #555; padding: 6px 10px; font-size: 14px; }
+        .btn-action.active { background: #d32f2f; border-color: #f44336; }
+
+        #room-status-panel {
+            background: #1a2332;
+            border: 1px solid #2a3b52;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 12px;
+            color: #b0bec5;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .nick-box { display: flex; gap: 4px; align-items: center; width: 100%; }
+        .nick-box input { font-size: 11px; padding: 4px 6px; }
+        .nick-box select { font-size: 14px; padding: 2px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; }
+        .nick-box button { font-size: 11px; padding: 4px 8px; background: #1976D2; }
+
+        .bottom-panel-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #audio-unlock-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #messenger-toast {
+            position: fixed;
+            bottom: -150px;
+            right: 15px;
+            width: 220px;
+            background: #1e293b;
+            border: 1px solid #3b82f6;
+            border-top: 4px solid #60a5fa;
+            border-radius: 8px;
+            padding: 12px 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+            font-size: 12px;
+            color: #f1f5f9;
+            z-index: 9999;
+            transition: bottom 1.0s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+        }
+        #messenger-toast.show { bottom: 15px; }
+        .toast-avatar-container { position: relative; width: 48px; height: 48px; }
+        .toast-avatar {
+            width: 100%; height: 100%; border-radius: 50%; background: #0f172a;
+            border: 2px solid #60a5fa; display: flex; align-items: center;
+            justify-content: center; font-size: 22px; overflow: hidden;
+        }
+        #messenger-toast .toast-content { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        #messenger-toast .toast-title { font-weight: bold; color: #93c5fd; margin-bottom: 2px; font-size: 11px; text-transform: uppercase; }
+        #toast-text { word-break: break-word; line-height: 1.3; color: #cbd5e1; }
+
+        @keyframes parpadeoCursor {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .retro-cursor {
+            display: inline-block; width: 8px; height: 10px;
+            background-color: #A5D6A7; margin-left: 3px;
+            vertical-align: middle; animation: parpadeoCursor 0.8s infinite;
+        }
+    </style>
+    <script type="importmap">
+        { "imports": { "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js" } }
+    </script>
+</head>
+<body>
+    <div id="audio-overlay" onclick="iniciarAppConAudio()">
+        <h2 id="overlay-title">Llaves Prado</h2>
+        <div id="overlay-canvas-container"></div>
+        <p id="overlay-desc">Haz clic para entrar.</p>
+    </div>
+
+    <div class="main-layout">
+        <div id="chat-container-wrapper">
+            <canvas id="webgpu-canvas"></canvas>
+            <div id="chat-box">
+                <div class="msg"><span class="ai">Orion:</span> Hola soy inteligencia artificial llaves prado en qué te puedo ayudar<span class="retro-cursor"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="prompt" placeholder="Escribe tu mensaje..." oninput="notificarEscritura()" onkeypress="if(event.key === 'Enter') enviarMensaje()">
+        <button type="button" id="mic-btn" class="btn-action" onclick="alternarEscucha()" title="Hablar">🎤</button>
+        <button id="send-btn" onclick="enviarMensaje()">Enviar</button>
+    </div>
+
+    <div id="room-status-panel">
+        <div class="nick-box">
+            <span>Tu Nick:</span>
+            <select id="msn-icon-select" onchange="actualizarNick()" title="Tecnología THRE - Estilo MSN">
+                <option value="😊">🟢 😊</option>
+                <option value="😎">🟢 😎</option>
+                <option value="🔥">🟢 🔥</option>
+                <option value="💡">🟢 💡</option>
+                <option value="☕">🟡 ☕</option>
+                <option value="⏳">🟡 ⏳</option>
+                <option value="⛔">🔴 ⛔</option>
+                <option value="🤖">🟢 🤖</option>
+            </select>
+            <input type="text" id="user-nick" placeholder="Ej: Alex..." maxlength="20">
+            <button onclick="actualizarNick()">Fijar</button>
+        </div>
+        <div class="bottom-panel-row">
+            <span style="font-size: 10px; color: #81C784;">Estado MSN THRE integrado</span>
+            <button id="audio-unlock-btn" class="unlocked" onclick="forzarDesbloqueoAudio()">✅ Audio Activo</button>
+        </div>
+    </div>
+
+    <div id="sidebar-users">
+        <div class="sidebar-title">Conectados (<span id="users-count">0</span>)</div>
+        <div id="users-list-container">
+            <div class="user-badge" style="color: #78909c; border-color: #546e7a;">Ninguno</div>
+        </div>
+    </div>
+
+    <div id="messenger-toast">
+        <div class="toast-avatar-container">
+            <div class="toast-avatar">👤</div>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">Aviso de red</div>
+            <div id="toast-text">Fulanito se ha conectado</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        const container = document.getElementById('overlay-canvas-container');
+        const overlayScene = new THREE.Scene();
+        const overlayCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+        const overlayRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        overlayRenderer.setSize(220, 220);
+        container.appendChild(overlayRenderer.domElement);
+
+        const overlayGroup = new THREE.Group();
+        overlayGroup.scale.set(1.35, 1.35, 1.35);
+        overlayScene.add(overlayGroup);
+
+        const shape = new THREE.Shape();
+        shape.moveTo(0, 1.8); shape.lineTo(0.7, 1.5); shape.lineTo(0.9, 0.9);
+        shape.lineTo(0.7, 0.4); shape.lineTo(0.20, 0.1);
+        shape.lineTo(0.38, -0.1); shape.lineTo(0.20, -0.3);
+        shape.lineTo(0.38, -0.5); shape.lineTo(0.20, -0.7);
+        shape.lineTo(0.38, -0.9); shape.lineTo(0.20, -1.1);
+        shape.lineTo(0.38, -1.3); shape.lineTo(0.20, -1.5);
+        shape.lineTo(0.38, -1.7); shape.lineTo(0, -2.1);
+        shape.lineTo(-0.20, -1.7); shape.lineTo(-0.20, 0.1);
+        shape.lineTo(-0.7, 0.4); shape.lineTo(-0.9, 0.9);
+        shape.lineTo(-0.7, 1.5); shape.lineTo(0, 1.8);
+        shape.closePath();
+
+        const hole = new THREE.Path();
+        const r = 0.22; const cy = 1.05;
+        hole.moveTo(r, cy); hole.lineTo(r * 0.707, cy + r * 0.707);
+        hole.lineTo(0, cy + r); hole.lineTo(-r * 0.707, cy + r * 0.707);
+        hole.lineTo(-r, cy); hole.lineTo(-r * 0.707, cy - r * 0.707);
+        hole.lineTo(0, cy - r); hole.lineTo(r * 0.707, cy - r * 0.707);
+        shape.holes.push(hole);
+
+        const lineLeft = new THREE.Path();
+        lineLeft.moveTo(-0.08, 0.05); lineLeft.lineTo(-0.08, -1.6);
+        lineLeft.lineTo(-0.02, -1.6); lineLeft.lineTo(-0.02, 0.05);
+        shape.holes.push(lineLeft);
+
+        const lineRight = new THREE.Path();
+        lineRight.moveTo(0.08, 0.05); lineRight.lineTo(0.08, -1.6);
+        lineRight.lineTo(0.02, -1.6); lineRight.lineTo(0.02, 0.05);
+        shape.holes.push(lineRight);
+
+        const geom = new THREE.ExtrudeGeometry(shape, { depth: 0.4, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.05 });
+        const keyMesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 }));
+        keyMesh.geometry.center();
+        overlayGroup.add(keyMesh);
+
+        function createServiceText(zPos, rotationY) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 70px Arial';
+            ctx.fillText('Valle de Aburrá', 512, 460);
+            ctx.fillText('Medellín, Colombia', 512, 550);
+            ctx.font = 'bold 60px Arial';
+            ctx.fillText('3044654556', 512, 640);
+            const texture = new THREE.CanvasTexture(canvas);
+            const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthTest: false }));
+            textMesh.renderOrder = 1;
+            textMesh.position.set(0, 0.65, zPos);
+            textMesh.rotation.y = rotationY;
+            return textMesh;
+        }
+        overlayGroup.add(createServiceText(0.26, 0));
+        overlayGroup.add(createServiceText(-0.26, Math.PI));
+
+        const overlayLight = new THREE.DirectionalLight(0xffffff, 2);
+        overlayLight.position.set(0, 0, 5);
+        overlayScene.add(overlayLight, new THREE.AmbientLight(0xffffff, 0.8));
+        overlayCamera.position.z = 5;
+
+        window.animarLlaveActiva = false;
+        function animateOverlay() {
+            requestAnimationFrame(animateOverlay);
+            if (window.animarLlaveActiva) {
+                overlayGroup.rotation.y += 0.05;
+            }
+            overlayRenderer.render(overlayScene, overlayCamera);
+        }
+        animateOverlay();
+    </script>
+
+    <script>
+        class FastNoise {
+            constructor() {
+                this.p = new Uint8Array(512);
+                const permutation = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+                    190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,
+                    68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
+                    102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,
+                    173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
+                    223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,
+                    232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,
+                    49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,
+                    141,128,195,78,66,215,61,156,180];
+                for (let i = 0; i < 256; i++) { this.p[i] = permutation[i]; this.p[256 + i] = permutation[i]; }
+            }
+            fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+            lerp(t, a, b) { return a + t * (b - a); }
+            noise(x, y) {
+                let X = Math.floor(x) & 255; let Y = Math.floor(y) & 255;
+                x -= Math.floor(x); y -= Math.floor(y);
+                let u = this.fade(x); let v = this.fade(y);
+                let A = this.p[X] + Y, B = this.p[X + 1] + Y;
+                return this.lerp(v, this.lerp(u, this.grad(this.p[A], x, y), this.grad(this.p[B], x - 1, y)),
+                                      this.lerp(u, this.grad(this.p[A + 1], x, y - 1), this.grad(this.p[B + 1], x - 1, y - 1)));
+            }
+            grad(hash, x, y) {
+                let h = hash & 7; let u = h < 4 ? x : y; let v = h < 4 ? y : x;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
+            octaveNoise(x, y, octaves) {
+                let total = 0, frequency = 1, amplitude = 1, maxValue = 0;
+                for (let i = 0; i < octaves; i++) {
+                    total += this.noise(x * frequency, y * frequency) * amplitude;
+                    maxValue += amplitude; amplitude *= 0.5; frequency *= 2.0;
+                }
+                return total / maxValue;
+            }
+        }
+
+        function initGraphics() {
+            const canvas = document.getElementById('webgpu-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 200; canvas.height = 155;
+            const noiseGen = new FastNoise();
+            let time = 0;
+            function renderAtmosphere() {
+                time += 0.022;
+                const imgData = ctx.createImageData(200, 155);
+                const data = imgData.data;
+                for (let y = 0; y < 155; y++) {
+                    const normY = y / 155;
+                    const rSky = Math.floor(30 + normY * 40);
+                    const gSky = Math.floor(90 + normY * 80);
+                    const bSky = Math.floor(180 + normY * 75);
+                    for (let x = 0; x < 200; x++) {
+                        const normX = x / 200;
+                        let n1 = noiseGen.octaveNoise(normX * 4.0 + time * 0.3, normY * 4.0 + Math.sin(time * 0.2) * 0.15, 5);
+                        let n2 = noiseGen.octaveNoise(normX * 1.5 - time * 0.2, normY * 1.5, 4);
+                        let cloudDensity = Math.max(0, Math.min(1, (n1 * 0.6 + n2 * 0.4 + 0.2) * 1.2));
+                        const index = (y * 200 + x) * 4;
+                        data[index] = Math.floor(rSky * (1 - cloudDensity) + 255 * cloudDensity);
+                        data[index + 1] = Math.floor(gSky * (1 - cloudDensity) + 255 * cloudDensity);
+                        data[index + 2] = Math.floor(bSky * (1 - cloudDensity) + 255 * cloudDensity);
+                        data[index + 3] = 255;
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+                requestAnimationFrame(renderAtmosphere);
+            }
+            requestAnimationFrame(renderAtmosphere);
+        }
+        initGraphics();
+
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const ws = new WebSocket(protocol + window.location.host);
+
+        let audioCtx = null;
+        let audioDesbloqueado = false;
+        let enTransicion = false;
+
+        let idleTimer = null;
+        let criticalTimer = null;
+        let estadoActual = 'activo';
+
+        let typingTimeout = null;
+        let isTypingSent = false;
+
+        function notificarEscritura() {
+            const val = document.getElementById('prompt').value;
+            if (val.trim().length > 0) {
+                if (!isTypingSent) {
+                    isTypingSent = true;
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'typing_status', typing: true }));
+                    }
+                }
+                if (typingTimeout) clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    isTypingSent = false;
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'typing_status', typing: false }));
+                    }
+                }, 1500);
+            } else {
+                if (isTypingSent) {
+                    isTypingSent = false;
+                    if (typingTimeout) clearTimeout(typingTimeout);
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'typing_status', typing: false }));
+                    }
+                }
+            }
+        }
+
+        function reiniciarTemporizadorInactividad() {
+            if (estadoActual !== 'activo') {
+                estadoActual = 'activo';
+                const iconSel = document.getElementById('msn-icon-select').value;
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'set_status', status: 'activo', msnIcon: iconSel }));
+                }
+            }
+
+            if (idleTimer) clearTimeout(idleTimer);
+            if (criticalTimer) clearTimeout(criticalTimer);
+
+            idleTimer = setTimeout(() => {
+                estadoActual = 'ausente';
+                const iconSel = document.getElementById('msn-icon-select').value;
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'set_status', status: 'ausente', msnIcon: iconSel }));
+                }
+                
+                criticalTimer = setTimeout(() => {
+                    estadoActual = 'critico';
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'set_status', status: 'critico', msnIcon: iconSel }));
+                    }
+                }, 3000);
+
+            }, 20000);
+        }
+
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evento => {
+            window.addEventListener(evento, reiniciarTemporizadorInactividad, { passive: true });
+        });
+
+        function iniciarAppConAudio() {
+            if (enTransicion) return;
+            enTransicion = true;
+
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!audioCtx) {
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                reproducirSonidoMessenger();
+                audioDesbloqueado = true;
+
+                document.getElementById('overlay-title').textContent = "Iniciando sesión...";
+                document.getElementById('overlay-desc').textContent = "Copyright 2026-2027, Valle de Aburrá, Medellín, Colombia.";
+
+                window.animarLlaveActiva = true;
+
+                const currentNick = document.getElementById('user-nick').value.trim();
+                const iconSel = document.getElementById('msn-icon-select').value;
+                if (currentNick && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'set_nick', nick: currentNick, msnIcon: iconSel }));
+                    ws.send(JSON.stringify({ type: 'set_status', status: 'activo', msnIcon: iconSel }));
+                }
+
+                reiniciarTemporizadorInactividad();
+
+                setTimeout(() => {
+                    const overlay = document.getElementById('audio-overlay');
+                    overlay.classList.add('fade-out');
+                    setTimeout(() => { overlay.style.display = 'none'; }, 500);
+                }, 3000);
+
+            } catch(e) {
+                console.error("Error al iniciar audio:", e);
+                enTransicion = false;
+            }
+        }
+
+        function forzarDesbloqueoAudio() {
+            iniciarAppConAudio();
+        }
+
+        function reproducirSonidoMessenger() {
+            if (!audioDesbloqueado && audioCtx === null) return;
+            try {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+                const notas = [587.33, 880, 740, 1174.66]; 
+                const tiempos = [0, 0.12, 0.24, 0.36];
+                const duraciones = [0.1, 0.1, 0.1, 0.4];
+
+                notas.forEach((freq, index) => {
+                    const startTime = now + tiempos[index];
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, startTime);
+
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duraciones[index]);
+
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + duraciones[index]);
+                });
+            } catch(e) {
+                console.log("Error en sonido MSN:", e);
+            }
+        }
+
+        let toastTimeout = null;
+
+        ws.onopen = function() {
+            const defaultNick = "Visitante_" + Math.floor(Math.random() * 900 + 100);
+            document.getElementById('user-nick').value = defaultNick;
+            const iconSel = document.getElementById('msn-icon-select').value;
+            ws.send(JSON.stringify({ type: 'set_nick', nick: defaultNick, msnIcon: iconSel }));
+            ws.send(JSON.stringify({ type: 'set_status', status: 'activo', msnIcon: iconSel }));
+        };
+
+        ws.onclose = function() {
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        };
+
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById('messenger-toast');
+            const toastText = document.getElementById('toast-text');
+            toastText.textContent = mensaje + " se ha conectado.";
+            toast.classList.add('show');
+
+            reproducirSonidoMessenger();
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 6000);
+        }
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const chatBox = document.getElementById('chat-box');
+
+            if (data.type === 'update_users') {
+                document.getElementById('users-count').textContent = data.count;
+                const container = document.getElementById('users-list-container');
+                container.innerHTML = '';
+
+                if (data.users.length === 0) {
+                    container.innerHTML = '<div class="user-badge" style="color: #78909c; border-color: #546e7a;">Ninguno</div>';
+                } else {
+                    data.users.forEach(userObj => {
+                        const badge = document.createElement('div');
+                        badge.className = 'user-badge';
+
+                        let baseText = (userObj.msnIcon || '😊') + ' ' + userObj.nick;
+                        if (userObj.status === 'critico') {
+                            badge.style.color = '#FF5252';
+                            badge.style.borderColor = '#FF5252';
+                            badge.style.borderLeftColor = '#FF5252';
+                            baseText += ' (Ausente)';
+                        } else if (userObj.status === 'ausente') {
+                            badge.style.color = '#A5D6A7';
+                            badge.style.borderColor = 'transparent';
+                            badge.style.borderLeftColor = '#81C784';
+                            baseText += ' (Inactivo)';
+                        } else {
+                            badge.style.color = '#81C784';
+                            badge.style.borderColor = 'transparent';
+                            badge.style.borderLeftColor = '#81C784';
+                        }
+
+                        let innerContent = '<span class="user-badge-left">' + baseText + '</span>';
+                        if (userObj.typing) {
+                            innerContent += '<span class="user-typing-sub">escribiendo...</span>';
+                        }
+                        badge.innerHTML = innerContent;
+                        container.appendChild(badge);
+                    });
+                }
+            }
+
+            if (data.type === 'user_notification') {
+                mostrarToast(data.nick);
+            }
+
+            if (data.type === 'chat_reset_and_user_msg') {
+                chatBox.innerHTML = '';
+                const userMsgDiv = document.createElement('div');
+                userMsgDiv.className = 'msg';
+                userMsgDiv.innerHTML = '<span class="user">' + data.nick + ':</span> ' + data.text;
+                chatBox.appendChild(userMsgDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            if (data.type === 'chat_ai_start') {
+                const aiMsgDiv = document.createElement('div');
+                aiMsgDiv.className = 'msg';
+                aiMsgDiv.innerHTML = '<span class="ai">Orion:</span> <span id="' + data.id + '" class="waiting">Analizando...</span><span class="retro-cursor"></span>';
+                chatBox.appendChild(aiMsgDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            if (data.type === 'chat_chunk') {
+                const aiSpan = document.getElementById(data.id);
+                if (aiSpan) {
+                    if (aiSpan.classList.contains('waiting')) {
+                        aiSpan.classList.remove('waiting');
+                        aiSpan.textContent = '';
+                    }
+                    aiSpan.textContent += data.text;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            }
+
+            if (data.type === 'chat_end') {
+                const aiSpan = document.getElementById(data.id);
+                if (aiSpan) {
+                    const cursor = aiSpan.parentElement.querySelector('.retro-cursor');
+                    if (cursor) cursor.remove();
+
+                    const fullText = aiSpan.textContent.replace(/['"\\*]/g, "").trim();
+                    if (fullText) {
+                        const escapedText = encodeURIComponent(fullText);
+                        aiSpan.parentElement.insertAdjacentHTML('beforeend', ' <button class="speaker-btn" onclick="hablarTexto(decodeURIComponent(\\\'' + escapedText + '\\\'))" title="Escuchar">🔊</button>');
+                    }
+                }
+                resetUIState();
+            }
+        };
+
+        function actualizarNick() {
+            const nickInput = document.getElementById('user-nick').value.trim();
+            const iconSel = document.getElementById('msn-icon-select').value;
+            if (nickInput) {
+                ws.send(JSON.stringify({ type: 'set_nick', nick: nickInput, msnIcon: iconSel }));
+                ws.send(JSON.stringify({ type: 'set_status', status: 'activo', msnIcon: iconSel }));
+                reiniciarTemporizadorInactividad();
+            }
+        }
+
+        let synth = window.speechSynthesis;
+        let recognition = null;
+        let escuchando = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-CO';
+            recognition.onresult = function(event) {
+                document.getElementById('prompt').value = event.results[0][0].transcript;
+                notificarEscritura();
+                detenerEscucha();
+                enviarMensaje();
+            };
+            recognition.onerror = () => detenerEscucha();
+            recognition.onend = () => detenerEscucha();
+        }
+
+        function alternarEscucha() {
+            if (!recognition) return alert("Reconocimiento de voz no soportado.");
+            if (escuchando) {
+                try { recognition.stop(); } catch(e) {}
+                detenerEscucha();
+            } else {
+                if (synth) synth.cancel();
+                try {
+                    recognition.start();
+                    escuchando = true;
+                    document.getElementById('mic-btn').classList.add('active');
+                    document.getElementById('mic-btn').innerText = '⏹️';
+                } catch(e) { detenerEscucha(); }
+            }
+        }
+
+        function detenerEscucha() {
+            escuchando = false;
+            const btn = document.getElementById('mic-btn');
+            if (btn) { btn.classList.remove('active'); btn.innerText = '🎤'; }
+        }
+
+        function hablarTexto(texto) {
+            if (!synth) return;
+            synth.cancel();
+            let utter = new SpeechSynthesisUtterance(texto);
+            utter.lang = 'es-CO'; utter.pitch = 0.60; utter.rate = 1.20;
+            synth.speak(utter);
+        }
+
+        function resetUIState() {
+            const sendBtn = document.getElementById('send-btn');
+            const promptInput = document.getElementById('prompt');
+            sendBtn.disabled = false;
+            sendBtn.innerText = 'Enviar';
+            promptInput.disabled = false;
+            promptInput.focus();
+
+            const chatBox = document.getElementById('chat-box');
+            chatBox.scrollTo({
+                top: chatBox.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        function enviarMensaje() {
+            const promptInput = document.getElementById('prompt');
+            const sendBtn = document.getElementById('send-btn');
+            const nickInput = document.getElementById('user-nick').value.trim() || 'Anónimo';
+            const texto = promptInput.value.trim();
+
+            if (!texto) return;
+            if (synth) synth.cancel();
+            detenerEscucha();
+
+            if (isTypingSent) {
+                isTypingSent = false;
+                if (typingTimeout) clearTimeout(typingTimeout);
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'typing_status', typing: false }));
+                }
+            }
+
+            promptInput.value = '';
+            sendBtn.disabled = true;
+            sendBtn.innerText = 'Proc...';
+            promptInput.disabled = true;
+
+            ws.send(JSON.stringify({ type: 'chat_prompt', prompt: texto, nick: nickInput }));
+        }
+    </script>
+</body>
+</html>`;
+
+app.get('/', (req, res) => {
+    res.send(htmlContent);
 });
+
+server.listen(PORT, () => {
+    console.log('Servidor Híbrido con WebSockets en puerto: http://localhost:' + PORT);
+});
+
